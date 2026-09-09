@@ -120,6 +120,26 @@ export interface ShoppingListItem {
   rewe_qty: number | null;
 }
 
+/** Shape returned by the extract-recipe edge function, shown in the review form. */
+export interface RecipeDraft {
+  title?: string;
+  description?: string;
+  servings?: number;
+  kcal_per_serving?: number;
+  prep_minutes?: number;
+  ingredients?: {
+    raw_text?: string;
+    name?: string;
+    quantity?: number | null;
+    unit?: string | null;
+    note?: string | null;
+  }[];
+  steps?: string[];
+  tags?: string[];
+  source_type?: SourceType;
+  source_ref?: string | null;
+}
+
 // --- Minimal Database shape for the typed supabase client ------------------
 type Row<T> = T;
 type Insert<T> = Partial<T>;

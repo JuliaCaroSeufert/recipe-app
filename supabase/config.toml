@@ -1,0 +1,9 @@
+# Minimal Supabase CLI config. `supabase link --project-ref <ref>` fills in the
+# project connection; only the function settings matter for this repo.
+
+project_id = "familienrezepte"
+
+[functions.extract-recipe]
+# The function does not touch the database, so it does not need a valid user
+# JWT. The app still sends the anon key via the Authorization header.
+verify_jwt = false

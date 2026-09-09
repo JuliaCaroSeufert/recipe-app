@@ -5,6 +5,7 @@ import { Alert, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Button, Field, Screen } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
+import { takeDraft } from '@/lib/draft';
 import { parseIngredientLine, splitIngredientBlock } from '@/lib/parse';
 import {
   createRecipe,
@@ -12,6 +13,7 @@ import {
   type RecipeInput,
   updateRecipe,
 } from '@/lib/recipes';
+import type { SourceType } from '@/lib/types';
 
 function toInt(s: string): number | null {
   const n = parseInt(s, 10);
@@ -33,6 +35,40 @@ export default function RecipeFormScreen() {
   const [tagsText, setTagsText] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(editing);
+  const [source, setSource] = useState<{ type: SourceType; ref: string | null }>(
+    { type: 'manual', ref: null },
+  );
+  const [fromImport, setFromImport] = useState(false);
+
+  // Prefill from an import draft (PDF / Instagram) on first mount.
+  useEffect(() => {
+    if (id) return;
+    const d = takeDraft();
+    if (!d) return;
+    // One-shot prefill from the import hand-off; runs once on mount.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setFromImport(true);
+    if (d.title) setTitle(d.title);
+    if (d.servings) setServings(String(d.servings));
+    if (d.kcal_per_serving) setKcal(String(d.kcal_per_serving));
+    if (d.prep_minutes) setPrep(String(d.prep_minutes));
+    if (d.description) setDescription(d.description);
+    if (d.ingredients?.length) {
+      setIngredientsText(
+        d.ingredients
+          .map(
+            (i) =>
+              i.raw_text ||
+              [i.quantity, i.unit, i.name].filter(Boolean).join(' '),
+          )
+          .join('\n'),
+      );
+    }
+    if (d.steps?.length) setStepsText(d.steps.join('\n'));
+    if (d.tags?.length) setTagsText(d.tags.join(', '));
+    setSource({ type: d.source_type ?? 'manual', ref: d.source_ref ?? null });
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [id]);
 
   useEffect(() => {
     if (!id) return;
@@ -95,6 +131,8 @@ export default function RecipeFormScreen() {
         .split(',')
         .map((t) => t.trim())
         .filter(Boolean),
+      source_type: source.type,
+      source_ref: source.ref,
     };
 
     setSaving(true);
@@ -124,8 +162,21 @@ export default function RecipeFormScreen() {
   return (
     <Screen>
       <Stack.Screen
-        options={{ title: editing ? 'Rezept bearbeiten' : 'Neues Rezept' }}
+        options={{
+          title: editing
+            ? 'Rezept bearbeiten'
+            : fromImport
+              ? 'Rezept prüfen'
+              : 'Neues Rezept',
+        }}
       />
+
+      {fromImport && (
+        <ThemedText type="small" themeColor="textSecondary">
+          Automatisch aus {source.type === 'pdf' ? 'PDF' : 'Instagram'} erkannt —
+          bitte prüfen und korrigieren, dann speichern.
+        </ThemedText>
+      )}
 
       <Field label="Titel" value={title} onChangeText={setTitle} />
 

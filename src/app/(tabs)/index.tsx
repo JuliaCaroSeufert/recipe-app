@@ -1,11 +1,21 @@
 import { Link, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Button, Empty, Screen } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { setDraft } from '@/lib/draft';
+import { ExtractCancelled, pickAndExtractPdf } from '@/lib/extract';
 import { listRecipes } from '@/lib/recipes';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import type { Recipe } from '@/lib/types';
@@ -16,6 +26,21 @@ export default function RecipesScreen() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+
+  async function importPdf() {
+    setImporting(true);
+    try {
+      const draft = await pickAndExtractPdf();
+      setDraft(draft);
+      router.push('/recipe/new');
+    } catch (e) {
+      if (e instanceof ExtractCancelled) return;
+      Alert.alert('Import fehlgeschlagen', e instanceof Error ? e.message : String(e));
+    } finally {
+      setImporting(false);
+    }
+  }
 
   const load = useCallback(async () => {
     if (!isSupabaseConfigured) {
@@ -93,7 +118,22 @@ export default function RecipesScreen() {
           title="+ Rezept hinzufügen"
           onPress={() => router.push('/recipe/new')}
         />
+        <Button
+          title="PDF importieren"
+          variant="secondary"
+          loading={importing}
+          onPress={importPdf}
+        />
       </View>
+
+      {importing && (
+        <View style={[styles.overlay, { backgroundColor: theme.background }]}>
+          <ActivityIndicator size="large" />
+          <ThemedText type="small" themeColor="textSecondary">
+            Rezept wird aus PDF gelesen…
+          </ThemedText>
+        </View>
+      )}
     </Screen>
   );
 }
@@ -108,5 +148,16 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   rowMain: { flex: 1, gap: 2 },
-  footer: { padding: Spacing.three },
+  footer: { padding: Spacing.three, gap: Spacing.two },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    opacity: 0.96,
+  },
 });
