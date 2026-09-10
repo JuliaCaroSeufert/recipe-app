@@ -1,10 +1,11 @@
-// Extracts a structured recipe from a PDF or image using the Google Gemini
-// free tier. Stateless: no database access, returns a draft the app shows in
-// its review screen before saving.
+// Extracts a structured recipe from a PDF, an image, or a pasted social-media
+// caption (Instagram) using the Google Gemini free tier. Stateless: no database
+// access, returns a draft the app shows in its review screen before saving.
 //
-// Request  (POST, JSON):
-//   { fileBase64: string, mimeType: string, sourceRef?: string }
+// Request  (POST, JSON) — provide a file, text, or both:
+//   { fileBase64?: string, mimeType?: string, text?: string, sourceRef?: string }
 //     mimeType: "application/pdf" | "image/jpeg" | "image/png" | "image/webp"
+//     text:     a recipe caption copied from Instagram, etc.
 // Response (JSON):
 //   { draft: RecipeDraft } | { error: string }
 //
@@ -48,7 +49,11 @@ const RESPONSE_SCHEMA = {
   required: ['title', 'servings', 'ingredients', 'steps'],
 };
 
-const PROMPT = `Du bekommst ein Rezept als PDF oder Bild. Extrahiere es als JSON.
+const PROMPT = `Du bekommst ein Rezept als PDF, Bild oder als kopierten Social-Media-Text
+(z. B. eine Instagram-Bildunterschrift). Extrahiere es als JSON.
+
+Bei Social-Media-Text: ignoriere Hashtags (#…), @-Erwähnungen, Emojis,
+Aufrufe wie "Folge mir" und Kommentare. Nimm nur Zutaten und Zubereitung.
 
 Regeln:
 - title: Name des Gerichts.
@@ -73,33 +78,38 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
   if (!API_KEY) return json({ error: 'GEMINI_API_KEY nicht gesetzt' }, 500);
 
-  let payload: { fileBase64?: string; mimeType?: string; sourceRef?: string };
+  let payload: {
+    fileBase64?: string;
+    mimeType?: string;
+    text?: string;
+    sourceRef?: string;
+  };
   try {
     payload = await req.json();
   } catch {
     return json({ error: 'Ungültiger JSON-Body' }, 400);
   }
 
-  const { fileBase64, mimeType } = payload;
-  if (!fileBase64 || !mimeType) {
-    return json({ error: 'fileBase64 und mimeType erforderlich' }, 400);
+  const { fileBase64, mimeType, text } = payload;
+  const caption = text?.trim();
+  if ((!fileBase64 || !mimeType) && !caption) {
+    return json(
+      { error: 'fileBase64 + mimeType oder text erforderlich' },
+      400,
+    );
   }
   // Base64 inflates ~33%; keep the whole request comfortably under Gemini's
   // ~20 MB inline limit.
-  if (fileBase64.length > 14_000_000) {
+  if (fileBase64 && fileBase64.length > 14_000_000) {
     return json({ error: 'Datei zu groß (max ~10 MB). Bitte kürzen.' }, 413);
   }
 
+  const parts: Record<string, unknown>[] = [{ text: PROMPT }];
+  if (caption) parts.push({ text: `Rezepttext:\n${caption}` });
+  if (fileBase64 && mimeType) parts.push({ inlineData: { mimeType, data: fileBase64 } });
+
   const geminiReq = {
-    contents: [
-      {
-        role: 'user',
-        parts: [
-          { text: PROMPT },
-          { inlineData: { mimeType, data: fileBase64 } },
-        ],
-      },
-    ],
+    contents: [{ role: 'user', parts }],
     generationConfig: {
       temperature: 0.1,
       responseMimeType: 'application/json',

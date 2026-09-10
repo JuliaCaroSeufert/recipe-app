@@ -14,7 +14,7 @@ Auth, Storage, Edge Functions). Recipe extraction from PDF/Instagram uses the
 | ----- | ----- | ----- |
 | 1 | App shell, Supabase schema, manual recipe CRUD (ingredients, steps, tags, kcal, servings) | ✅ done |
 | 2 | PDF import → Gemini extraction → review screen | ✅ done (needs deploy, see below) |
-| 3 | Instagram import (share-intent → caption → Gemini) | ⬜ |
+| 3 | Instagram import (paste caption or screenshot → Gemini) | ✅ done |
 | 4 | Weekly-plan generator with filters (days, meals/day, tag rules, kcal limit), persons set once, confirm | ✅ done |
 | 5 | Shopping list: aggregate ingredient quantities across recipes, scale by persons, group by category | ✅ done |
 | 6 | REWE ordering (unofficial API) + shopping-list export fallback | ⬜ |
@@ -102,6 +102,23 @@ Notes:
   "Tageslimit erreicht" message when Gemini returns HTTP 429.
 - Max PDF size ~10 MB (Gemini inline-data limit).
 
+## Phase 3 — Instagram import
+
+Uses the same `extract-recipe` edge function as the PDF import, so no extra
+setup beyond the Phase 2 deploy. Instagram blocks scraping post captions
+without a login, so the import takes the recipe from content you already have:
+
+- **Rezepte → Instagram importieren**
+  - **Aus Text lesen** — open the post, copy the caption text, paste it. Gemini
+    strips hashtags/emojis and extracts ingredients + steps.
+  - **Screenshot importieren** — pick a screenshot of the recipe from your
+    gallery; it is sent to Gemini as an image.
+- Optionally paste the post link; it is stored as the recipe's source.
+- The result opens in the same "Rezept prüfen" review form as the PDF import.
+
+A native Android share-intent target ("share to FamilienRezepte") needs a
+custom dev build (not Expo Go) and can be added later without changing this flow.
+
 ## Phase 4 + 5 — weekly plan & shopping list
 
 No extra setup — both run entirely against the Supabase schema from Phase 1.
@@ -127,6 +144,7 @@ src/
     (tabs)/                Rezepte · Wochenplan · Einkauf
     recipe/[id].tsx        recipe detail
     recipe/new.tsx         create / edit form (?id=<uuid> to edit)
+    recipe/instagram.tsx   Instagram import (paste caption / pick screenshot)
   components/ui.tsx         Screen, Field, Button, Card, Empty
   lib/
     supabase.ts            client + anonymous session bootstrap
@@ -134,7 +152,7 @@ src/
     parse.ts               ingredient-line parser ("200 g Feta, gewürfelt")
     recipes.ts             recipe CRUD + ingredient/tag catalog
   lib/
-    extract.ts             pick a PDF + call the extract-recipe function
+    extract.ts             PDF / Instagram caption / screenshot → extract fn
     draft.ts               import → review-form hand-off
     plan.ts                weekly-plan generator (pure) + plan persistence
     shopping.ts            cross-recipe quantity aggregation + list access

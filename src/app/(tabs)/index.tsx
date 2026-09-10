@@ -124,6 +124,11 @@ export default function RecipesScreen() {
           loading={importing}
           onPress={importPdf}
         />
+        <Button
+          title="Instagram importieren"
+          variant="secondary"
+          onPress={() => router.push('/recipe/instagram')}
+        />
       </View>
 
       {importing && (

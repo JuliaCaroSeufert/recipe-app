@@ -15,6 +15,10 @@ export default function RootLayout() {
           name="recipe/new"
           options={{ title: 'Rezept', presentation: 'modal' }}
         />
+        <Stack.Screen
+          name="recipe/instagram"
+          options={{ title: 'Instagram importieren', presentation: 'modal' }}
+        />
         <Stack.Screen name="recipe/[id]" options={{ title: 'Rezept' }} />
       </Stack>
     </ThemeProvider>
