@@ -15,8 +15,8 @@ Auth, Storage, Edge Functions). Recipe extraction from PDF/Instagram uses the
 | 1 | App shell, Supabase schema, manual recipe CRUD (ingredients, steps, tags, kcal, servings) | ✅ done |
 | 2 | PDF import → Gemini extraction → review screen | ✅ done (needs deploy, see below) |
 | 3 | Instagram import (share-intent → caption → Gemini) | ⬜ |
-| 4 | Weekly-plan generator with filters (days, meals/day, tag rules, kcal limit), persons set once, confirm | ⬜ |
-| 5 | Shopping list: aggregate ingredient quantities across recipes, scale by persons, group by category | ⬜ |
+| 4 | Weekly-plan generator with filters (days, meals/day, tag rules, kcal limit), persons set once, confirm | ✅ done |
+| 5 | Shopping list: aggregate ingredient quantities across recipes, scale by persons, group by category | ✅ done |
 | 6 | REWE ordering (unofficial API) + shopping-list export fallback | ⬜ |
 
 ## Prerequisites
@@ -102,6 +102,23 @@ Notes:
   "Tageslimit erreicht" message when Gemini returns HTTP 429.
 - Max PDF size ~10 MB (Gemini inline-data limit).
 
+## Phase 4 + 5 — weekly plan & shopping list
+
+No extra setup — both run entirely against the Supabase schema from Phase 1.
+
+1. **Wochenplan** tab → set persons (once for the week), days, meals/day, an
+   optional max kcal/serving, tag include/exclude filters and tag rules
+   (e.g. "mindestens 3× bake and dump"). Tap **Plan generieren** for a preview,
+   regenerate until happy, then **Bestätigen & Einkaufsliste erstellen**.
+2. **Einkauf** tab → the confirmed plan's ingredients, summed across all recipes
+   and scaled to the person count, grouped by category. Tap to tick items off,
+   or **Als Text teilen** to export the list (REWE ordering follows in Phase 6).
+
+The generator prefers unused recipes for variety and only repeats a recipe when
+the filtered pool is smaller than the number of meals. It reports a clear German
+message when the filters cannot be satisfied (e.g. too few recipes carrying a
+required tag).
+
 ## Project layout
 
 ```
@@ -119,6 +136,8 @@ src/
   lib/
     extract.ts             pick a PDF + call the extract-recipe function
     draft.ts               import → review-form hand-off
+    plan.ts                weekly-plan generator (pure) + plan persistence
+    shopping.ts            cross-recipe quantity aggregation + list access
 supabase/
   migrations/0001_init.sql full schema (all phases) + RLS
   functions/extract-recipe stateless Gemini extraction (Deno)
