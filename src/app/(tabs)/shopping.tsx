@@ -1,4 +1,4 @@
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, Share, StyleSheet, View } from 'react-native';
 
@@ -17,6 +17,7 @@ import {
 
 export default function ShoppingScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const [view, setView] = useState<ShoppingListView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -140,10 +141,8 @@ export default function ShoppingScreen() {
         </Card>
       ))}
 
+      <Button title="Bei REWE bestellen" onPress={() => router.push('/rewe')} />
       <Button title="Als Text teilen" variant="secondary" onPress={share} />
-      <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-        REWE-Bestellung folgt in Phase 6.
-      </ThemedText>
       <View style={{ height: Spacing.five }} />
     </Screen>
   );
@@ -167,5 +166,4 @@ const styles = StyleSheet.create({
   checkMark: { color: '#fff', fontSize: 14, lineHeight: 16 },
   itemName: { flex: 1 },
   itemChecked: { textDecorationLine: 'line-through' },
-  hint: { textAlign: 'center' },
 });

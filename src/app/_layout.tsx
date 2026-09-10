@@ -20,6 +20,7 @@ export default function RootLayout() {
           options={{ title: 'Instagram importieren', presentation: 'modal' }}
         />
         <Stack.Screen name="recipe/[id]" options={{ title: 'Rezept' }} />
+        <Stack.Screen name="rewe" options={{ title: 'Bei REWE bestellen' }} />
       </Stack>
     </ThemeProvider>
   );

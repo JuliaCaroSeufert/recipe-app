@@ -6,7 +6,7 @@
 // linked to the ingredient catalog). The result is one row per ingredient/unit.
 
 import { ensureSession, supabase } from './supabase';
-import type { Ingredient, ShoppingListItem, Unit } from './types';
+import type { Ingredient, ShoppingListItem, ShoppingStatus, Unit } from './types';
 import type { GeneratedPick } from './plan';
 
 // --- aggregation ------------------------------------------------------------
@@ -130,6 +130,7 @@ export interface ShoppingItemView extends ShoppingListItem {
 
 export interface ShoppingListView {
   listId: string;
+  status: ShoppingStatus;
   planTitle: string;
   persons: number;
   /** Items grouped by ingredient category ("Sonstiges" when unset). */
@@ -153,7 +154,7 @@ export async function getLatestShoppingList(): Promise<ShoppingListView | null> 
 
   const { data: list, error: listError } = await supabase
     .from('shopping_lists')
-    .select('id')
+    .select('id,status')
     .eq('plan_id', (plan as any).id)
     .maybeSingle();
   if (listError) throw listError;
@@ -181,6 +182,7 @@ export async function getLatestShoppingList(): Promise<ShoppingListView | null> 
 
   return {
     listId,
+    status: ((list as any).status ?? 'open') as ShoppingStatus,
     planTitle: (plan as any).title,
     persons: (plan as any).servings,
     groups,

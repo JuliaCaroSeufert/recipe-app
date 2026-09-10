@@ -17,7 +17,7 @@ Auth, Storage, Edge Functions). Recipe extraction from PDF/Instagram uses the
 | 3 | Instagram import (paste caption or screenshot → Gemini) | ✅ done |
 | 4 | Weekly-plan generator with filters (days, meals/day, tag rules, kcal limit), persons set once, confirm | ✅ done |
 | 5 | Shopping list: aggregate ingredient quantities across recipes, scale by persons, group by category | ✅ done |
-| 6 | REWE ordering (unofficial API) + shopping-list export fallback | ⬜ |
+| 6 | REWE handoff (deep-link product search per item) + text export fallback | ✅ done |
 
 ## Prerequisites
 
@@ -136,6 +136,28 @@ the filtered pool is smaller than the number of meals. It reports a clear German
 message when the filters cannot be satisfied (e.g. too few recipes carrying a
 required tag).
 
+## Phase 6 — REWE ordering
+
+**Why it's a handoff, not one-tap checkout:** REWE has no public ordering API.
+The endpoints behind `shop.rewe.de` are login-, cookie- and bot-protected
+(Akamai) and change without notice, so a headless "fill the cart and pay" flow
+can't be built reliably — and automating it would breach REWE's terms. So the
+app hands the list to REWE the robust way and lets REWE own the account,
+market, delivery address and payment.
+
+- **Einkauf → Bei REWE bestellen**
+  - **Ganze Liste bei REWE öffnen** / per-item **Bei REWE suchen** — opens a
+    REWE product-search universal link (the REWE app if installed, else
+    `shop.rewe.de` in the browser) with the ingredient pre-filled. Pick the
+    product, add to cart, repeat, then check out inside REWE.
+  - **Als bestellt markieren** — flips the list to `ordered`.
+  - **Liste als Text teilen** — the plain-text export fallback.
+
+No setup or keys required. A tighter integration (product matching with prices
+via the private mobile API) is possible later but is inherently brittle; the
+`ingredients.rewe_product_id` / `shopping_list_items.rewe_product_id` columns
+are already reserved for it.
+
 ## Project layout
 
 ```
@@ -145,6 +167,7 @@ src/
     recipe/[id].tsx        recipe detail
     recipe/new.tsx         create / edit form (?id=<uuid> to edit)
     recipe/instagram.tsx   Instagram import (paste caption / pick screenshot)
+    rewe.tsx               REWE order handoff (per-item / whole-list search)
   components/ui.tsx         Screen, Field, Button, Card, Empty
   lib/
     supabase.ts            client + anonymous session bootstrap
@@ -156,6 +179,7 @@ src/
     draft.ts               import → review-form hand-off
     plan.ts                weekly-plan generator (pure) + plan persistence
     shopping.ts            cross-recipe quantity aggregation + list access
+    rewe.ts                REWE product-search deep links + order status
 supabase/
   migrations/0001_init.sql full schema (all phases) + RLS
   functions/extract-recipe stateless Gemini extraction (Deno)
