@@ -1,0 +1,50 @@
+{
+  "_hinweis": "ILLUSTRATIVES Beispiel für sample_caption.txt – von Hand erstellt, um die erwartete Ausgabe zu zeigen. NICHT live von Claude erzeugt. Führe extract_recipe.py mit deinem API-Schlüssel aus, um echte Ergebnisse zu sehen.",
+  "title": "Cremige Kichererbsen-Spinat-Pfanne",
+  "emoji": "🥘",
+  "description": "Schnelle One-Pot-Pfanne mit Kichererbsen, Spinat und Kokosmilch.",
+  "prepMinutes": 25,
+  "baseServings": 4,
+  "suitableFor": ["lunch", "dinner"],
+  "tags": ["schnell", "vegan", "one-pot", "meal-prep"],
+  "isVegetarian": true,
+  "isVegan": true,
+  "batchFriendly": true,
+  "ingredients": [
+    {"name": "Kichererbsen", "amount": 2, "unit": "Dose", "category": "legumes", "produceKey": "Kichererbse"},
+    {"name": "Spinat", "amount": 400, "unit": "g", "category": "produce", "produceKey": "Spinat"},
+    {"name": "Gehackte Tomaten", "amount": 1, "unit": "Dose", "category": "pantry", "produceKey": "Tomate"},
+    {"name": "Kokosmilch", "amount": 200, "unit": "ml", "category": "pantry", "produceKey": null},
+    {"name": "Zwiebel", "amount": 1, "unit": "Stück", "category": "produce", "produceKey": "Zwiebel"},
+    {"name": "Knoblauch", "amount": 2, "unit": "Stück", "category": "produce", "produceKey": "Knoblauch"},
+    {"name": "Currypulver", "amount": 1, "unit": "EL", "category": "spices", "produceKey": null},
+    {"name": "Olivenöl", "amount": 2, "unit": "EL", "category": "spices", "produceKey": null}
+  ],
+  "steps": [
+    "Zwiebel und Knoblauch fein hacken und in Olivenöl anbraten.",
+    "Currypulver kurz mitrösten.",
+    "Tomaten, Kokosmilch und Kichererbsen zugeben, 10 Min köcheln.",
+    "Spinat unterrühren, mit Salz und Pfeffer abschmecken."
+  ],
+  "nutritionPerServing": {
+    "kcal": 385,
+    "protein": 15,
+    "carbs": 38,
+    "fat": 19,
+    "fiber": 11,
+    "iron": 4.6,
+    "calcium": 185,
+    "magnesium": 95,
+    "potassium": 820,
+    "zinc": 2.2,
+    "vitaminC": 24,
+    "vitaminA": 510,
+    "folate": 165
+  },
+  "_meta": {
+    "model": "claude-haiku-5-5",
+    "input_tokens": 520,
+    "output_tokens": 430,
+    "estimated_cost_usd": 0.00027
+  }
+}
