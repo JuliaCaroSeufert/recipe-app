@@ -32,6 +32,8 @@ Falls du das Repo schon hast, reichen die letzten drei Zeilen (im Projektordner)
 1. **Anthropic-Konto + API-Schlüssel** anlegen: <https://console.anthropic.com> →
    *API Keys* → *Create Key*. Ein paar Euro Guthaben reichen für tausende Rezepte.
 2. Python 3.10+ vorausgesetzt, dann:
+
+   **macOS / Linux:**
    ```bash
    cd server/ai-import-prototype
    python -m venv .venv && source .venv/bin/activate
@@ -39,6 +41,24 @@ Falls du das Repo schon hast, reichen die letzten drei Zeilen (im Projektordner)
    export ANTHROPIC_API_KEY=sk-ant-...        # dein Schlüssel
    python extract_recipe.py sample_caption.txt
    ```
+
+   **Windows (PowerShell):** `export` gibt es hier NICHT – die Variable wird
+   mit `$env:` gesetzt.
+   ```powershell
+   cd server\ai-import-prototype
+   python -m venv .venv
+   .venv\Scripts\Activate.ps1
+   pip install -r requirements.txt
+   $env:ANTHROPIC_API_KEY = "sk-ant-..."      # dein Schlüssel (in Anführungszeichen)
+   python extract_recipe.py sample_caption.txt
+   ```
+   Blockiert Windows `Activate.ps1` ("Ausführungsrichtlinie"), vorher einmal
+   `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` ausführen (gilt
+   nur für dieses Fenster). In der klassischen Eingabeaufforderung (cmd) statt
+   `$env:...` einfach `set ANTHROPIC_API_KEY=sk-ant-...`.
+
+   > API-Schlüssel niemals in Chats, Screenshots oder Git teilen. Ist das
+   > passiert, in der Anthropic-Console widerrufen und neu erzeugen.
 3. Du bekommst das fertige Rezept als JSON ausgegeben – inkl. `_meta` mit den
    tatsächlichen Tokenkosten dieses Aufrufs (zum Gegenrechnen).
 
