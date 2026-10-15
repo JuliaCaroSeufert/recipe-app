@@ -1,21 +1,31 @@
-@AGENTS.md
+# Essensplan — build notes
 
-# FamilienRezepte — build notes
+Offline-first **Flutter (Dart)** meal-planning app for phone. Weekly plan for
+lunch + dinner with recipe suggestions, nutrition optimisation (macros +
+micros), vegetable-variety goal (≥20/week), batch cooking, order/eat-out days,
+shopping list, Instagram import and week recycling. All data is local (SQLite
+via `sqflite`); no backend.
 
-Android-first recipe app. Stack: Expo (React Native) + TypeScript, Supabase
-(Postgres + Auth + Storage + Edge Functions), Gemini free tier for
-PDF/Instagram recipe extraction (Groq free tier fallback). REWE ordering via
-unofficial API is the last phase; ship a shopping-list export as the fallback.
+Full feature overview and run instructions live in `README.md`.
 
-Phase status and setup steps live in `README.md`. Full schema (all phases) is
-`supabase/migrations/0001_init.sql` — extend it there, keep `src/lib/types.ts`
-in sync.
+## Conventions
 
-Conventions:
-- User-facing strings are German. Code, comments, commits stay English.
-- Data access goes through `src/lib/*.ts`; screens never call `supabase`
-  directly except to read `isSupabaseConfigured`.
-- `npx tsc --noEmit` and `npx expo export --platform android` must both pass
+- User-facing strings are **German**. Code, comments, commits stay English.
+- Keep business logic **pure and testable** in `lib/logic/` — it must not depend
+  on Flutter or the database. Screens read everything through `AppState`
+  (`lib/state/app_state.dart`); only the `Repository` touches `sqflite`.
+- Domain models in `lib/models/` own their own `toJson`/`fromJson`; the
+  repository stores them as JSON text columns.
+- `flutter analyze` must report **no issues** and `flutter test` must pass
   before a commit.
-- expo-router 57 vendors react-navigation internally; import `Tabs`/`Stack`
-  from `expo-router`. Standard JS tab bar (works in Expo Go), not native tabs.
+- Nutrition keys are centralised in `lib/models/nutrition.dart` (`kNutrients`);
+  add a nutrient there and `Nutrition.byKey` so UI and generator pick it up.
+- When you add a seed recipe, tag each vegetable/legume ingredient with a
+  `produceKey` so it counts toward the weekly variety goal.
+
+## Environment
+
+This repo was bootstrapped with Flutter `stable` (Dart 3.13+). In this cloud
+container the Android SDK is not installed, so `flutter build apk`/`bundle`
+can't run here — use `flutter analyze`, `flutter test` and `flutter build web`
+(or `-d chrome`) to verify compilation.
