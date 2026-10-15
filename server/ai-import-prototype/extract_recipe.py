@@ -17,6 +17,7 @@ Nutzung:
 """
 
 import json
+import os
 import sys
 
 import anthropic
@@ -115,7 +116,11 @@ Regeln:
 
 def extract_recipe(caption: str, url: str | None = None) -> dict:
     """Ruft Claude Haiku 5.5 auf und gibt das Rezept als dict zurück."""
-    client = anthropic.Anthropic()
+    # Nicht-workspace-gebundene API-Keys brauchen die Workspace-ID als Header.
+    workspace = os.environ.get("ANTHROPIC_WORKSPACE_ID")
+    client = anthropic.Anthropic(
+        default_headers={"anthropic-workspace-id": workspace} if workspace else None,
+    )
     user_content = caption if not url else f"Quelle: {url}\n\n{caption}"
     response = client.messages.create(
         model=MODEL,

@@ -67,6 +67,21 @@ Eigenen Text testen: Caption kopieren und reingeben, z. B.
 pbpaste | python extract_recipe.py -          # macOS
 ```
 
+## Fehler "API key is not scoped to a workspace"?
+
+Dein Schlüssel ist nicht an einen Workspace gebunden. Zwei Lösungen:
+
+- **A (am einfachsten):** In der Anthropic-Console einen **workspace-gebundenen**
+  Key erzeugen – Console → *Settings* → *Workspaces* → den Workspace öffnen →
+  *API Keys* → *Create Key*. Dieser Key läuft ohne Zusatz.
+- **B:** Bestehenden Key behalten und die **Workspace-ID** mitgeben. ID in der
+  Console unter *Settings → Workspaces* (Format `wrkspc_...`), dann:
+  ```powershell
+  $env:ANTHROPIC_WORKSPACE_ID = "wrkspc_..."
+  python extract_recipe.py sample_caption.txt
+  ```
+  (Das Script sendet die ID dann automatisch mit.)
+
 ## Was es kostet
 
 Ein Aufruf nutzt **Claude Haiku 5.5** ($0,10 pro 1 Mio. Eingabe-Tokens,
