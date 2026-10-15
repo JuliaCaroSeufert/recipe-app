@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../data/food_db.dart';
 import '../../models/ingredient.dart';
 import '../../models/nutrition.dart';
 import '../../models/recipe.dart';
@@ -378,6 +379,18 @@ class _RecipeEditScreenState extends State<RecipeEditScreen> {
                   controller: d.name,
                   decoration:
                       const InputDecoration(hintText: 'Zutat', isDense: true),
+                  onChanged: (value) {
+                    // Suggest category/veggie flag from the food database,
+                    // without clobbering a choice the user already made.
+                    final entry = lookupFood(value);
+                    if (entry == null) return;
+                    setState(() {
+                      if (d.category == IngredientCategory.other) {
+                        d.category = entry.category;
+                      }
+                      if (entry.produceKey != null) d.isVeggie = true;
+                    });
+                  },
                 ),
               ),
               const SizedBox(width: 6),
