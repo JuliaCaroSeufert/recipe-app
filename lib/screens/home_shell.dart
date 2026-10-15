@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../services/share_service.dart';
+import 'recipes/instagram_import.dart';
 import 'recipes/recipes_screen.dart';
 import 'settings/settings_screen.dart';
 import 'shopping/shopping_screen.dart';
@@ -14,6 +16,20 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Open the import screen whenever a caption/link is shared into the app.
+    ShareService.instance.onText = (text) {
+      final nav = navigatorKey.currentState;
+      if (nav == null) return;
+      nav.push(MaterialPageRoute(
+        builder: (_) => InstagramImportScreen(sharedText: text),
+      ));
+    };
+    ShareService.instance.start();
+  }
 
   static const _screens = [
     WeekScreen(),

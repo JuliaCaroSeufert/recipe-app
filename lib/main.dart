@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'data/repository.dart';
 import 'screens/home_shell.dart';
+import 'services/share_service.dart';
 import 'state/app_state.dart';
 import 'theme.dart';
 
@@ -30,6 +31,7 @@ class EssensplanApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Essensplan',
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),

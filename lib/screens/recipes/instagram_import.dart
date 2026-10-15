@@ -15,16 +15,39 @@ import 'recipe_edit.dart';
 /// doesn't cover them and scraping breaches their terms), so the user pastes
 /// the text they already see in the app.
 class InstagramImportScreen extends StatefulWidget {
-  const InstagramImportScreen({super.key});
+  /// Text handed in by the share sheet (a caption and/or a reel link).
+  final String? sharedText;
+
+  const InstagramImportScreen({super.key, this.sharedText});
 
   @override
   State<InstagramImportScreen> createState() => _InstagramImportScreenState();
 }
 
+final RegExp _urlOnly = RegExp(r'^\s*https?://\S+\s*$');
+final RegExp _instaUrl = RegExp(r'https?://\S*instagram\.com/\S+');
+
 class _InstagramImportScreenState extends State<InstagramImportScreen> {
   final _url = TextEditingController();
   final _caption = TextEditingController();
   Recipe? _draft;
+
+  @override
+  void initState() {
+    super.initState();
+    final shared = widget.sharedText;
+    if (shared != null && shared.trim().isNotEmpty) {
+      if (_urlOnly.hasMatch(shared)) {
+        // Only a link was shared — Instagram doesn't share the caption text.
+        _url.text = shared.trim();
+      } else {
+        _caption.text = shared;
+        final m = _instaUrl.firstMatch(shared);
+        if (m != null) _url.text = m.group(0)!;
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) => _reparse());
+    }
+  }
 
   @override
   void dispose() {
@@ -76,6 +99,23 @@ class _InstagramImportScreenState extends State<InstagramImportScreen> {
               ],
             ),
           ),
+          if (_caption.text.trim().isEmpty && _url.text.trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: scheme.tertiaryContainer,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Text(
+                'Nur der Link wurde geteilt – Instagram gibt die Beschreibung '
+                'nicht mit. Tipp: In Instagram die Beschreibung antippen, Text '
+                'markieren und über „Teilen" an Essensplan senden. Dann wird '
+                'das Rezept automatisch erkannt.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           TextField(
             controller: _url,

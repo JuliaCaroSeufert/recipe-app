@@ -22,7 +22,7 @@ Gebaut mit **Flutter (Dart)**. Alle Daten liegen lokal auf dem Gerät
 | Abneigungen („mag ich nicht") | In **Einstellungen**; betroffene Rezepte werden übersprungen |
 | Schnelle & leckere Rezepte schon drin | 24 mitgelieferte Rezepte (Filter „Schnell", „Vegan" …) |
 | Einkaufsliste | Tab **Einkauf**: automatisch aus dem Plan, gruppiert, abhakbar, kopierbar |
-| Rezepte aus Instagram importieren | **Rezepte → +**: Caption einfügen, wird in ein Rezept umgewandelt |
+| Rezepte aus Instagram importieren | **Teilen** aus Instagram → Essensplan (oder **Rezepte → +**): Text wird automatisch in ein Rezept umgewandelt |
 | Wochen recyceln | Tab **Woche → Archiv**: alte Woche z. B. in 3 Monaten erneut einplanen |
 | Makro- **und** Mikronährstoffe tracken & optimieren | Jedes Rezept hat Nährwerte; der Planer füllt gezielt Nährstofflücken |
 | ≥ 20 Gemüse/Hülsenfrüchte pro Woche | Vielfalts-Ziel im Plan; der Generator maximiert verschiedene Sorten |
@@ -79,6 +79,17 @@ test/          Logik-Tests
 - **Nährwerte**: kuratierte Werte pro Rezept (angelehnt an USDA/DACH-
   Referenzwerte), damit alles offline funktioniert. Neue Zutaten könnten später
   per USDA-FoodData-Central-API ergänzt werden.
-- **Instagram-Import**: bewusst per **Einfügen der Caption** statt automatischem
-  Scrapen. Instagrams offizielle API deckt fremde Posts nicht ab und Scraping
-  verstößt gegen die Nutzungsbedingungen.
+- **Instagram-Import**: per **Teilen-Menü** (`receive_sharing_intent`) – in
+  Instagram die Beschreibung markieren und über „Teilen" an Essensplan senden,
+  kein Kopieren nötig. Ein geteilter Rezepttext wird direkt erkannt; wird nur
+  der Reel-**Link** geteilt, gibt Instagram die Beschreibung nicht mit (die App
+  weist darauf hin). Bewusst **kein automatisches Scrapen** fremder Posts:
+  Instagrams API deckt sie nicht ab und Scraping verstößt gegen die AGB.
+
+### Teilen auf iOS einrichten
+
+Android funktioniert sofort (Intent-Filter ist in `AndroidManifest.xml`
+konfiguriert). Für iOS braucht `receive_sharing_intent` zusätzlich eine **Share
+Extension** und eine **App Group** im Xcode-Projekt – siehe die
+Paket-Doku unter <https://pub.dev/packages/receive_sharing_intent>. Ohne diese
+Schritte baut die iOS-App normal, empfängt aber keine geteilten Inhalte.
