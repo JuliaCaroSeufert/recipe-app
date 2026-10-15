@@ -9,6 +9,24 @@ Noch **ohne** Scraping und **ohne** Video – damit du zuerst Qualität und
 Aufwand siehst, bevor wir die volle Pipeline (Link teilen → Video → Rezept)
 bauen.
 
+## 0. Code holen & Branch auschecken
+
+Der Code liegt auf dem Branch **`claude/gallant-bohr-s6ur6z`** (der Name ist
+automatisch vergeben). Zum Kopieren:
+
+```bash
+# Noch nicht geklont? Dann:
+git clone https://github.com/JuliaCaroSeufert/recipe-app.git
+cd recipe-app
+
+# Branch auschecken und neuesten Stand holen:
+git fetch origin
+git checkout claude/gallant-bohr-s6ur6z
+git pull origin claude/gallant-bohr-s6ur6z
+```
+
+Falls du das Repo schon hast, reichen die letzten drei Zeilen (im Projektordner).
+
 ## Ausprobieren (ca. 5 Minuten)
 
 1. **Anthropic-Konto + API-Schlüssel** anlegen: <https://console.anthropic.com> →
