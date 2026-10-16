@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../logic/ai_import.dart';
 import '../../logic/instagram_parse.dart';
 import '../../models/ingredient.dart';
 import '../../models/recipe.dart';
 import '../../state/app_state.dart';
+import '../settings/settings_screen.dart';
 import 'recipe_edit.dart';
 
 /// Import a recipe from Instagram by pasting the post/reel caption. The app
@@ -31,6 +33,8 @@ class _InstagramImportScreenState extends State<InstagramImportScreen> {
   final _url = TextEditingController();
   final _caption = TextEditingController();
   Recipe? _draft;
+  bool _draftFromAi = false;
+  bool _aiLoading = false;
 
   @override
   void initState() {
@@ -45,7 +49,14 @@ class _InstagramImportScreenState extends State<InstagramImportScreen> {
         final m = _instaUrl.firstMatch(shared);
         if (m != null) _url.text = m.group(0)!;
       }
-      WidgetsBinding.instance.addPostFrameCallback((_) => _reparse());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _reparse();
+        // If a Gemini key is set, recognise the shared caption automatically.
+        final app = context.read<AppState>();
+        if (app.household.hasAiKey && _caption.text.trim().isNotEmpty) {
+          _runAi();
+        }
+      });
     }
   }
 
@@ -59,6 +70,7 @@ class _InstagramImportScreenState extends State<InstagramImportScreen> {
   void _reparse() {
     final text = _caption.text.trim();
     setState(() {
+      _draftFromAi = false;
       _draft = text.isEmpty
           ? null
           : parseInstagramCaption(
@@ -66,6 +78,38 @@ class _InstagramImportScreenState extends State<InstagramImportScreen> {
               url: _url.text.trim().isEmpty ? null : _url.text.trim(),
             );
     });
+  }
+
+  Future<void> _runAi() async {
+    final app = context.read<AppState>();
+    final key = app.household.geminiApiKey;
+    final caption = _caption.text.trim();
+    if (caption.isEmpty) return;
+    setState(() => _aiLoading = true);
+    try {
+      final recipe = await aiExtractRecipe(
+        _caption.text,
+        apiKey: key,
+        url: _url.text.trim().isEmpty ? null : _url.text.trim(),
+      );
+      if (!mounted) return;
+      setState(() {
+        _draft = recipe;
+        _draftFromAi = true;
+      });
+    } on AiImportException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('KI-Import fehlgeschlagen: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _aiLoading = false);
+    }
   }
 
   @override
@@ -138,6 +182,20 @@ class _InstagramImportScreenState extends State<InstagramImportScreen> {
             maxLines: 16,
           ),
           const SizedBox(height: 16),
+          _aiArea(context),
+          const SizedBox(height: 12),
+          if (draft != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                _draftFromAi
+                    ? '🤖 Von Gemini erkannt'
+                    : '⚡ Schnell-Erkennung (offline)',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: _draftFromAi ? scheme.primary : scheme.onSurfaceVariant,
+                    ),
+              ),
+            ),
           if (draft != null) _Preview(draft: draft),
           if (draft != null) ...[
             const SizedBox(height: 16),
@@ -157,6 +215,64 @@ class _InstagramImportScreenState extends State<InstagramImportScreen> {
               label: const Text('Anpassen & speichern'),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _aiArea(BuildContext context) {
+    final hasKey = context.watch<AppState>().household.hasAiKey;
+    final scheme = Theme.of(context).colorScheme;
+    if (hasKey) {
+      return SizedBox(
+        width: double.infinity,
+        child: FilledButton.icon(
+          onPressed:
+              (_aiLoading || _caption.text.trim().isEmpty) ? null : _runAi,
+          icon: _aiLoading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.auto_awesome),
+          label: Text(_aiLoading ? 'KI arbeitet…' : 'Mit KI erkennen (Gemini)'),
+        ),
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🤖', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'KI-Import ist aus. Mit einem kostenlosen Gemini-Schlüssel '
+                  'erkennt die App Rezepte automatisch und genauer (inkl. '
+                  'Nährwerte).',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ],
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              ),
+              child: const Text('Schlüssel hinterlegen'),
+            ),
+          ),
         ],
       ),
     );

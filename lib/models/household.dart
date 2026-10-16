@@ -12,13 +12,20 @@ class Household {
   /// Distinct vegetables/legumes to aim for each week.
   final int weeklyVarietyTarget;
 
+  /// Optional Google Gemini API key for the AI recipe import (stored locally,
+  /// on this device only). Empty = AI import off, local parsing is used.
+  final String geminiApiKey;
+
   const Household({
     this.persons = 2,
     this.dislikes = const [],
     this.vegetarianOnly = false,
     this.veganOnly = false,
     this.weeklyVarietyTarget = 20,
+    this.geminiApiKey = '',
   });
+
+  bool get hasAiKey => geminiApiKey.trim().isNotEmpty;
 
   Household copyWith({
     int? persons,
@@ -26,6 +33,7 @@ class Household {
     bool? vegetarianOnly,
     bool? veganOnly,
     int? weeklyVarietyTarget,
+    String? geminiApiKey,
   }) =>
       Household(
         persons: persons ?? this.persons,
@@ -33,6 +41,7 @@ class Household {
         vegetarianOnly: vegetarianOnly ?? this.vegetarianOnly,
         veganOnly: veganOnly ?? this.veganOnly,
         weeklyVarietyTarget: weeklyVarietyTarget ?? this.weeklyVarietyTarget,
+        geminiApiKey: geminiApiKey ?? this.geminiApiKey,
       );
 
   Map<String, dynamic> toJson() => {
@@ -41,6 +50,7 @@ class Household {
         'vegetarianOnly': vegetarianOnly,
         'veganOnly': veganOnly,
         'weeklyVarietyTarget': weeklyVarietyTarget,
+        'geminiApiKey': geminiApiKey,
       };
 
   factory Household.fromJson(Map<String, dynamic> j) => Household(
@@ -49,5 +59,6 @@ class Household {
         vegetarianOnly: (j['vegetarianOnly'] as bool?) ?? false,
         veganOnly: (j['veganOnly'] as bool?) ?? false,
         weeklyVarietyTarget: (j['weeklyVarietyTarget'] as num?)?.toInt() ?? 20,
+        geminiApiKey: (j['geminiApiKey'] as String?) ?? '',
       );
 }

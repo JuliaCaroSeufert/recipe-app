@@ -12,11 +12,22 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final _dislikeCtrl = TextEditingController();
+  late final TextEditingController _geminiCtrl =
+      TextEditingController(text: context.read<AppState>().household.geminiApiKey);
 
   @override
   void dispose() {
     _dislikeCtrl.dispose();
+    _geminiCtrl.dispose();
     super.dispose();
+  }
+
+  void _saveGeminiKey(AppState app) {
+    app.saveHousehold(app.household.copyWith(geminiApiKey: _geminiCtrl.text.trim()));
+    FocusScope.of(context).unfocus();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('KI-Schlüssel gespeichert.')),
+    );
   }
 
   @override
@@ -108,6 +119,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ],
           ),
+
+          _title('KI-Import (Gemini)'),
+          Text(
+            'Mit einem kostenlosen Google-Gemini-Schlüssel erkennt die App '
+            'geteilte Instagram-Rezepte automatisch. Schlüssel gratis holen '
+            'unter aistudio.google.com/apikey – wird nur hier auf dem Gerät '
+            'gespeichert.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _geminiCtrl,
+                  obscureText: true,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration: const InputDecoration(
+                    hintText: 'Gemini-Schlüssel (AIza…)',
+                    isDense: true,
+                  ),
+                  onSubmitted: (_) => _saveGeminiKey(app),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton.filledTonal(
+                onPressed: () => _saveGeminiKey(app),
+                icon: const Icon(Icons.save),
+              ),
+            ],
+          ),
+          if (h.hasAiKey)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                '✓ KI-Import aktiv',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+              ),
+            ),
 
           _title('Rezepte'),
           ListTile(

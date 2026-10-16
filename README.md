@@ -86,6 +86,23 @@ test/          Logik-Tests
   weist darauf hin). Bewusst **kein automatisches Scrapen** fremder Posts:
   Instagrams API deckt sie nicht ab und Scraping verstößt gegen die AGB.
 
+### KI-Import (Gemini, optional & kostenlos)
+
+Für automatisch erkannte Rezepte (inkl. geschätzter Nährwerte) kannst du einen
+**kostenlosen Google-Gemini-Schlüssel** hinterlegen:
+
+1. Gratis-Schlüssel holen: <https://aistudio.google.com/apikey> (nur Google-Konto,
+   keine Kreditkarte).
+2. In der App: **Einstellungen → KI-Import (Gemini)** → Schlüssel einfügen,
+   speichern. Er bleibt nur lokal auf dem Gerät.
+3. Danach erscheint im Import („Rezepte → + → Aus Instagram importieren" bzw.
+   beim Teilen) der Button **„Mit KI erkennen"**; geteilte Captions werden
+   automatisch verarbeitet. Ohne Schlüssel greift weiter die lokale
+   Offline-Erkennung.
+
+Ein Prototyp/Playground dazu liegt unter `server/ai-import-prototype/`
+(Python; Gemini gratis, Claude als Alternative).
+
 ### Teilen auf iOS einrichten
 
 Android funktioniert sofort (Intent-Filter ist in `AndroidManifest.xml`
