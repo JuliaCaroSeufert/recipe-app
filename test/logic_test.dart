@@ -86,6 +86,37 @@ void main() {
       expect(cook.servings, greaterThan(2));
     });
 
+    test('never serves the same recipe twice on one day; batch spans days', () {
+      final plan = generateWeekPlan(
+        GenerateConfig(
+            startDate: monday, seed: 9, batchSessions: 2, batchSpan: 4),
+        seedRecipes,
+        const Household(persons: 2),
+      );
+      // No day has the same recipe for both lunch and dinner.
+      for (final day in plan.days) {
+        final ids = day.meals.values
+            .where((s) => s.hasRecipe)
+            .map((s) => s.recipeId)
+            .toList();
+        expect(ids.length, ids.toSet().length,
+            reason: 'same dish twice on one day');
+      }
+      // Each batch group lands on distinct days.
+      final byBatch = <String, List<int>>{};
+      for (var d = 0; d < plan.days.length; d++) {
+        for (final s in plan.days[d].meals.values) {
+          if (s.batchId != null) {
+            byBatch.putIfAbsent(s.batchId!, () => []).add(d);
+          }
+        }
+      }
+      for (final days in byBatch.values) {
+        expect(days.length, days.toSet().length,
+            reason: 'batch cooked/eaten twice on one day');
+      }
+    });
+
     test('reaches a strong vegetable variety over the week', () {
       final plan = generateWeekPlan(
         GenerateConfig(startDate: monday, seed: 7),

@@ -140,23 +140,21 @@ WeekPlan generateWeekPlan(
   var sessionsMade = 0;
   for (final recipe in batchPool) {
     if (sessionsMade >= config.batchSessions) break;
-    // Find a run of consecutive still-free positions that suit the recipe.
-    final run = <int>[];
+    // Spread a batch across DISTINCT days (at most one meal per day), so the
+    // same dish never lands twice on one day. Takes the earliest available
+    // days, up to batchSpan days.
+    final firstFreePerDay = <int, int>{}; // day -> cookPositions index
     for (var i = 0; i < cookPositions.length; i++) {
-      if (filled.contains(i)) {
-        run.clear();
-        continue;
-      }
-      final (_, meal) = cookPositions[i];
-      if (!suits(recipe, meal)) {
-        run.clear();
-        continue;
-      }
-      run.add(i);
-      if (run.length >= config.batchSpan) break;
+      if (filled.contains(i)) continue;
+      final (day, meal) = cookPositions[i];
+      if (!suits(recipe, meal)) continue;
+      firstFreePerDay.putIfAbsent(day, () => i);
     }
-    if (run.length < 2) continue; // not worth a batch
-    final span = run.length;
+    final days = firstFreePerDay.keys.toList()..sort();
+    if (days.length < 2) continue; // need at least two days to batch
+    final span =
+        days.length < config.batchSpan ? days.length : config.batchSpan;
+    final run = [for (final d in days.take(span)) firstFreePerDay[d]!];
     final batchId = _uuid.v4();
     for (var k = 0; k < run.length; k++) {
       final posIndex = run[k];

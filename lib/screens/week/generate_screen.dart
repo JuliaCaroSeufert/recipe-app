@@ -20,7 +20,7 @@ class _GenerateScreenState extends State<GenerateScreen> {
   final Set<MealType> _meals = {MealType.lunch, MealType.dinner};
   late int _persons;
   int _batchSessions = 1;
-  int _batchSpan = 3;
+  int _batchSpan = 4;
   final Set<String> _orderSlots = {};
 
   @override
