@@ -6,7 +6,8 @@ plugins {
 
 android {
     namespace = "de.seufert.essensplan"
-    compileSdk = flutter.compileSdkVersion
+    // receive_sharing_intent benötigt Android SDK 37 (abwärtskompatibel).
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
