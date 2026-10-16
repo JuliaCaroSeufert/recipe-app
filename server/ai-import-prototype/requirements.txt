@@ -1,1 +1,4 @@
+# Für die Claude-Variante (extract_recipe.py):
 anthropic>=0.69
+# Für die kostenlose Gemini-Variante (extract_recipe_gemini.py):
+google-genai>=1.0

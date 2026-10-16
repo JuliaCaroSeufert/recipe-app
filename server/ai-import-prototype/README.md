@@ -27,7 +27,36 @@ git pull origin claude/gallant-bohr-s6ur6z
 
 Falls du das Repo schon hast, reichen die letzten drei Zeilen (im Projektordner).
 
-## Ausprobieren (ca. 5 Minuten)
+## Zwei Varianten – nimm die kostenlose
+
+- **Variante A – Google Gemini (KOSTENLOS, keine Kreditkarte):** `extract_recipe_gemini.py`
+- **Variante B – Anthropic Claude (braucht Guthaben auf dem Konto):** `extract_recipe.py`
+
+Beide liefern dasselbe Ergebnis. Wenn du keine Zahlungsdaten hinterlegen
+willst, nimm **Variante A**.
+
+## Variante A – Gemini (kostenlos)
+
+1. Gratis-Schlüssel holen: <https://aistudio.google.com/apikey> → mit
+   Google-Konto anmelden → **„Create API key"** → kopieren. (Nur Google-Konto
+   nötig, keine Karte.)
+2. Einmalig Pakete installieren (im Ordner `server/ai-import-prototype`):
+   ```powershell
+   python -m venv .venv
+   .venv\Scripts\Activate.ps1
+   pip install -r requirements.txt
+   ```
+3. Schlüssel setzen und starten:
+   ```powershell
+   $env:GEMINI_API_KEY = "DEIN_GEMINI_KEY"
+   python extract_recipe_gemini.py sample_caption.txt
+   ```
+   (macOS/Linux: `export GEMINI_API_KEY=...` statt `$env:...`.)
+
+Die Gratis-Stufe hat Ratenlimits (Anfragen pro Minute/Tag), die für den
+Privatgebrauch locker reichen.
+
+## Variante B – Claude (Anthropic, braucht Guthaben)
 
 1. **Anthropic-Konto + API-Schlüssel** anlegen: <https://console.anthropic.com> →
    *API Keys* → *Create Key*. Ein paar Euro Guthaben reichen für tausende Rezepte.
