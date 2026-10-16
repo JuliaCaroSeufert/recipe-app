@@ -27,8 +27,11 @@ from google.genai import types
 
 import recipe_spec
 
-# Stabiles, kostenloses Flash-Modell. Bei Bedarf per GEMINI_MODEL überschreibbar.
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+# Kostenloses Flash-Modell. Bei Bedarf per GEMINI_MODEL überschreibbar.
+# Hinweis: Google rotiert die Flash-Versionen; wenn ein 404 "no longer
+# available" kommt, nenne der Fehler das neue Modell – dann einfach
+# $env:GEMINI_MODEL = "gemini-X.Y-flash" setzen.
+MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 
 
 def _strip_code_fence(text: str) -> str:
