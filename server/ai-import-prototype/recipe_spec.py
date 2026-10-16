@@ -87,9 +87,11 @@ Regeln:
 - Schätze die Nährwerte PRO PORTION so gut es geht (Makros + Mikros) aus den
   Zutaten und Mengen. Lieber eine fundierte Schätzung als Nullen. Wenn eine
   Menge fehlt, setze amount=0, schätze die Nährwerte trotzdem plausibel.
-- isVegan/isVegetarian aus den Zutaten ableiten. batchFriendly=true nur wenn
-  das Gericht sich gut vorkochen/aufwärmen lässt (Eintöpfe, Currys, Suppen,
-  Aufläufe), sonst false.
+- isVegan/isVegetarian aus den Zutaten ableiten. batchFriendly=true NUR wenn
+  sich das Gericht gekocht 4–5 Tage im Kühlschrank hält und gut wieder
+  aufwärmbar ist (Eintöpfe, Currys, Dal, Suppen, Chili, Bolognese-/Tomaten-
+  saucen, Aufläufe). Frische Bowls, Blattsalate, Ofengemüse, knusprige oder
+  panierte Gerichte und alles mit rohem Blattgrün/Avocado = false.
 - Wähle ein passendes Emoji. Erfinde keine Schritte, die nicht im Text stehen;
   fasse den Text nur sauber zusammen.
 """

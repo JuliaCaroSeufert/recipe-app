@@ -1,0 +1,40 @@
+name: Web-Vorschau veröffentlichen
+
+# Baut die Web-Version und stellt sie auf GitHub Pages bereit, damit du
+# Änderungen im Browser siehst – ohne die App neu zu installieren.
+# Einmalig nötig: Repo -> Settings -> Pages -> Source: "Deploy from a branch"
+# -> Branch "gh-pages" / "/ (root)" -> Save.
+on:
+  push:
+    branches: ['claude/gallant-bohr-s6ur6z']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Flutter einrichten
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+
+      - name: Pakete holen
+        run: flutter pub get
+
+      - name: Web bauen
+        run: flutter build web --release --base-href /recipe-app/
+
+      - name: Auf GitHub Pages veröffentlichen
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
+          publish_branch: gh-pages

@@ -116,8 +116,9 @@ class _GenerateScreenState extends State<GenerateScreen> {
 
           _sectionTitle('Batch-Cooking'),
           Text(
-            'Einmal kochen, mehrfach essen. Wähle, wie viele Gerichte '
-            'vorgekocht werden und für wie viele Mahlzeiten sie reichen.',
+            'Einmal kochen, an mehreren Tagen essen – verteilt auf '
+            'verschiedene Tage. Es werden nur gut lagerfähige Gerichte '
+            '(4–5 Tage haltbar) gewählt.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 8),

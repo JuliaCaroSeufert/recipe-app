@@ -37,8 +37,10 @@ Regeln:
   wie Kartoffel/Reis/Nudeln ist KEIN produceKey.
 - Schätze die Nährwerte PRO PORTION so gut es geht (Makros + Mikros) aus den
   Zutaten und Mengen. Lieber eine fundierte Schätzung als Nullen.
-- isVegan/isVegetarian aus den Zutaten ableiten. batchFriendly=true nur wenn
-  das Gericht sich gut vorkochen/aufwärmen lässt, sonst false.
+- isVegan/isVegetarian aus den Zutaten ableiten. batchFriendly=true NUR wenn
+  sich das Gericht gekocht 4–5 Tage im Kühlschrank hält und gut aufwärmbar ist
+  (Eintöpfe, Currys, Dal, Suppen, Chili, Bolognese/Tomatensaucen, Aufläufe).
+  Frische Bowls, Salate, Ofengemüse und knusprige Gerichte = false.
 - Wähle ein passendes Emoji. Erfinde keine Schritte, die nicht im Text stehen.
 ''';
 

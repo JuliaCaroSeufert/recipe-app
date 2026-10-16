@@ -126,7 +126,7 @@ final List<Recipe> seedRecipes = [
     description: 'Bunte Bowl mit viel Gemüse und magerem Protein.',
     prepMinutes: 25,
     tags: ['schnell', 'proteinreich', 'meal-prep'],
-    batchFriendly: true,
+    batchFriendly: false,
     createdAt: _seedDate,
     ingredients: [
       _i('Hähnchenbrust', 300, 'g', _meat),
@@ -168,7 +168,7 @@ final List<Recipe> seedRecipes = [
     prepMinutes: 35,
     tags: ['vegetarisch', 'bake-and-dump', 'one-pan'],
     isVegetarian: true,
-    batchFriendly: true,
+    batchFriendly: false,
     createdAt: _seedDate,
     ingredients: [
       _i('Zucchini', 1, 'Stück', _produce, 'Zucchini'),
@@ -490,7 +490,7 @@ final List<Recipe> seedRecipes = [
     prepMinutes: 25,
     tags: ['schnell', 'vegetarisch', 'meal-prep', 'kalt'],
     isVegetarian: true,
-    batchFriendly: true,
+    batchFriendly: false,
     createdAt: _seedDate,
     ingredients: [
       _i('Couscous', 200, 'g', _pantry),
@@ -570,7 +570,7 @@ final List<Recipe> seedRecipes = [
     description: 'Ein Blech, wenig Abwasch, viel Geschmack.',
     prepMinutes: 40,
     tags: ['bake-and-dump', 'proteinreich', 'one-pan'],
-    batchFriendly: true,
+    batchFriendly: false,
     createdAt: _seedDate,
     ingredients: [
       _i('Hähnchenschenkel', 4, 'Stück', _meat),
