@@ -7,6 +7,7 @@ import '../../models/week_plan.dart';
 import '../../state/app_state.dart';
 import '../../theme.dart';
 import '../../utils/dates.dart';
+import '../../widgets/nutrient_dots.dart';
 import '../../widgets/recipe_photo.dart';
 import '../../widgets/ui_kit.dart';
 
@@ -217,6 +218,8 @@ class _BigCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 10),
+                NutrientDots(recipe: recipe),
+                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -224,7 +227,7 @@ class _BigCard extends StatelessWidget {
                     for (final h in recipe.highlights)
                       Pill(h,
                           color: AppColors.greenDeep,
-                          background: const Color(0x141E9E63)),
+                          background: const Color(0x1415B79E)),
                     Pill('${recipe.prepMinutes} Min',
                         icon: Icons.schedule_rounded),
                     Pill('${recipe.nutritionPerServing.kcal.round()} kcal',

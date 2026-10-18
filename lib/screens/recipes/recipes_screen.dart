@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/recipe.dart';
 import '../../state/app_state.dart';
-import '../../theme.dart';
+import '../../widgets/nutrient_dots.dart';
 import '../../widgets/recipe_photo.dart';
 import '../../widgets/ui_kit.dart';
 import 'instagram_import.dart';
@@ -228,16 +228,7 @@ class RecipeTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleSmall),
                   const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      for (final h in recipe.highlights)
-                        Pill(h,
-                            color: AppColors.greenDeep,
-                            background: const Color(0x141E9E63)),
-                    ],
-                  ),
+                  NutrientDots(recipe: recipe),
                   const SizedBox(height: 8),
                   Row(
                     children: [

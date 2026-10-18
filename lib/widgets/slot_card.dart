@@ -51,7 +51,7 @@ Widget slotCard(
           '${recipe?.prepMinutes ?? 0} Min · ${recipe?.nutritionPerServing.kcal.round() ?? 0} kcal';
       if (recipe?.isVegan ?? false) {
         badges.add(const Pill('vegan',
-            background: Color(0x1A1E9E63), color: AppColors.greenDeep));
+            background: Color(0x1A15B79E), color: AppColors.greenDeep));
       } else if (recipe?.isVegetarian ?? false) {
         badges.add(const Pill('vegetarisch'));
       }

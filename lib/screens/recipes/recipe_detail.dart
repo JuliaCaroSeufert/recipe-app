@@ -6,6 +6,7 @@ import '../../models/week_plan.dart';
 import '../../state/app_state.dart';
 import '../../theme.dart';
 import '../../utils/dates.dart';
+import '../../widgets/nutrient_dots.dart';
 import '../../widgets/nutrition_widgets.dart';
 import '../../widgets/recipe_photo.dart';
 import '../../widgets/ui_kit.dart';
@@ -103,7 +104,7 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                           icon: Icons.local_fire_department_rounded),
                       if (recipe.isVegan)
                         const Pill('vegan',
-                            background: Color(0x1A1E9E63),
+                            background: Color(0x1A15B79E),
                             color: AppColors.greenDeep)
                       else if (recipe.isVegetarian)
                         const Pill('vegetarisch'),
@@ -112,6 +113,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                             icon: Icons.inventory_2_outlined),
                     ],
                   ),
+
+                  const SizedBox(height: 12),
+                  NutrientDots(recipe: recipe, max: 5),
 
                   const SizedBox(height: 20),
                   // Quick nutrition rings (per serving vs daily need).

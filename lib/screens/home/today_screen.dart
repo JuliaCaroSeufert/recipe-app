@@ -74,31 +74,57 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('$greeting 👋',
-                  style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 2),
-              Text(
-                'Heute, ${weekdayName(DateTime.now())} · ${dayMonth(DateTime.now())}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-              ),
-            ],
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 18, 14, 18),
+      decoration: BoxDecoration(
+        gradient: AppColors.heroGradient,
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.green.withValues(alpha: 0.28),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
-        ),
-        IconButton.filledTonal(
-          onPressed: () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const SettingsScreen())),
-          icon: const Icon(Icons.settings_outlined),
-        ),
-      ],
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('$greeting 👋',
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineMedium
+                        ?.copyWith(color: Colors.white)),
+                const SizedBox(height: 2),
+                Text(
+                  'Heute, ${weekdayName(DateTime.now())} · ${dayMonth(DateTime.now())}',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+                ),
+              ],
+            ),
+          ),
+          Material(
+            color: Colors.white.withValues(alpha: 0.22),
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen())),
+              child: const Padding(
+                padding: EdgeInsets.all(10),
+                child: Icon(Icons.settings_outlined, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -368,7 +394,7 @@ class _Featured extends StatelessWidget {
                         for (final h in r.highlights)
                           Pill(h,
                               color: AppColors.greenDeep,
-                              background: const Color(0x141E9E63)),
+                              background: const Color(0x1415B79E)),
                         Pill('${r.prepMinutes} Min',
                             icon: Icons.schedule_rounded),
                       ],

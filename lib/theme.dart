@@ -1,30 +1,38 @@
 import 'package:flutter/material.dart';
 
-/// Central colour palette — fresh, appetising, friendly.
+/// Vibrant, modern, friendly palette (teal-green + purple + pink accents).
 class AppColors {
-  static const green = Color(0xFF1E9E63); // primary (fresh herb green)
-  static const greenDeep = Color(0xFF147A4B);
-  static const coral = Color(0xFFFF6F4E); // warm accent
-  static const amber = Color(0xFFF6A723); // lunch / energy
-  static const berry = Color(0xFF8E5BD9); // dinner / variety
-  static const cream = Color(0xFFFBF6EE); // light background
+  static const green = Color(0xFF15B79E); // primary – fresh teal-green
+  static const greenDeep = Color(0xFF0E9384);
+  static const purple = Color(0xFF7A5AF8); // accent
+  static const berry = Color(0xFF7A5AF8); // alias used for dinner/variety
+  static const pink = Color(0xFFF6499B);
+  static const coral = Color(0xFFFF6F4E);
+  static const amber = Color(0xFFF79009);
+  static const cream = Color(0xFFFBF7F1); // light background
   static const card = Color(0xFFFFFFFF);
-  static const ink = Color(0xFF241F1A);
+  static const ink = Color(0xFF231D2E);
 
-  static const darkBg = Color(0xFF14130F);
-  static const darkCard = Color(0xFF211E18);
+  static const darkBg = Color(0xFF141218);
+  static const darkCard = Color(0xFF211E29);
 
-  /// A small, pleasant palette used to tint recipe/emoji tiles so lists feel
-  /// lively even without photos. Deterministic per string.
+  /// Colourful hero gradient for headers / onboarding.
+  static const heroGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF17C3A2), Color(0xFF0E9384)],
+  );
+
+  /// Soft, pleasant tints for recipe/emoji tiles (deterministic per string).
   static const _tiles = [
-    Color(0xFFFFE8D6), // peach
-    Color(0xFFDEF2E0), // mint
-    Color(0xFFFCE4D6), // apricot
-    Color(0xFFE7E3FB), // lavender
-    Color(0xFFFFF0C9), // butter
-    Color(0xFFD9EEF6), // sky
-    Color(0xFFFADDE1), // blossom
-    Color(0xFFE6F0D4), // pistachio
+    Color(0xFFFFE4D1), // peach
+    Color(0xFFD6F3EA), // mint
+    Color(0xFFE7E0FF), // lavender
+    Color(0xFFFFE0EE), // blossom
+    Color(0xFFFFF1CC), // butter
+    Color(0xFFD6ECFB), // sky
+    Color(0xFFE6F3D6), // pistachio
+    Color(0xFFFCDDD2), // apricot
   ];
 
   static Color tileFor(String seed) {
@@ -44,12 +52,12 @@ ThemeData buildTheme(Brightness brightness) {
   );
   final scheme = base.copyWith(
     primary: AppColors.green,
-    secondary: AppColors.coral,
-    tertiary: AppColors.amber,
+    secondary: AppColors.purple,
+    tertiary: AppColors.pink,
     surface: isLight ? AppColors.cream : AppColors.darkBg,
-    surfaceContainer: isLight ? const Color(0xFFF5EEE3) : AppColors.darkCard,
+    surfaceContainer: isLight ? const Color(0xFFF4EEE4) : AppColors.darkCard,
     surfaceContainerHighest:
-        isLight ? const Color(0xFFEFE7D9) : const Color(0xFF2B2720),
+        isLight ? const Color(0xFFEDE6DA) : const Color(0xFF2C2838),
   );
 
   final text = _textTheme(scheme.onSurface);
@@ -73,7 +81,7 @@ ThemeData buildTheme(Brightness brightness) {
       elevation: 0,
       color: isLight ? AppColors.card : AppColors.darkCard,
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       margin: EdgeInsets.zero,
     ),
     chipTheme: ChipThemeData(
@@ -83,18 +91,21 @@ ThemeData buildTheme(Brightness brightness) {
       selectedColor: scheme.primary,
       labelStyle: text.labelLarge,
       showCheckmark: false,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
     ),
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: isLight ? AppColors.card : AppColors.darkCard,
       elevation: 0,
-      height: 66,
-      indicatorColor: scheme.primary.withValues(alpha: 0.16),
+      height: 68,
+      indicatorColor: scheme.primary.withValues(alpha: 0.18),
       labelTextStyle: WidgetStateProperty.resolveWith(
         (s) => text.labelMedium?.copyWith(
           fontWeight: s.contains(WidgetState.selected)
-              ? FontWeight.w600
+              ? FontWeight.w700
               : FontWeight.w500,
+          color: s.contains(WidgetState.selected)
+              ? scheme.primary
+              : scheme.onSurfaceVariant,
         ),
       ),
       iconTheme: WidgetStateProperty.resolveWith(
@@ -110,7 +121,7 @@ ThemeData buildTheme(Brightness brightness) {
         minimumSize: const Size.fromHeight(54),
         textStyle: text.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -118,7 +129,7 @@ ThemeData buildTheme(Brightness brightness) {
         minimumSize: const Size.fromHeight(50),
         side: BorderSide(color: scheme.outlineVariant),
         shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -126,7 +137,7 @@ ThemeData buildTheme(Brightness brightness) {
       foregroundColor: Colors.white,
       elevation: 2,
       extendedTextStyle: text.titleSmall?.copyWith(
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         color: Colors.white,
       ),
     ),
@@ -164,7 +175,15 @@ ThemeData buildTheme(Brightness brightness) {
 }
 
 TextTheme _textTheme(Color onSurface) {
-  TextStyle s(double size, FontWeight w, {double? h, double? ls}) => TextStyle(
+  // Playful rounded display (Baloo2) for big headings, Poppins for the rest.
+  TextStyle d(double size, FontWeight w, {double? h}) => TextStyle(
+        fontFamily: 'Baloo2',
+        fontSize: size,
+        fontWeight: w,
+        height: h,
+        color: onSurface,
+      );
+  TextStyle p(double size, FontWeight w, {double? h, double? ls}) => TextStyle(
         fontFamily: 'Poppins',
         fontSize: size,
         fontWeight: w,
@@ -173,17 +192,17 @@ TextTheme _textTheme(Color onSurface) {
         color: onSurface,
       );
   return TextTheme(
-    displaySmall: s(30, FontWeight.w700, h: 1.15),
-    headlineMedium: s(26, FontWeight.w700, h: 1.2),
-    headlineSmall: s(22, FontWeight.w600, h: 1.2),
-    titleLarge: s(20, FontWeight.w600, h: 1.25),
-    titleMedium: s(17, FontWeight.w600),
-    titleSmall: s(15, FontWeight.w600),
-    bodyLarge: s(16, FontWeight.w400, h: 1.4),
-    bodyMedium: s(14, FontWeight.w400, h: 1.4),
-    bodySmall: s(12.5, FontWeight.w400, h: 1.35),
-    labelLarge: s(13.5, FontWeight.w500),
-    labelMedium: s(12, FontWeight.w500),
-    labelSmall: s(11, FontWeight.w500, ls: 0.2),
+    displaySmall: d(32, FontWeight.w700, h: 1.1),
+    headlineMedium: d(27, FontWeight.w700, h: 1.15),
+    headlineSmall: d(23, FontWeight.w600, h: 1.15),
+    titleLarge: d(21, FontWeight.w600, h: 1.2),
+    titleMedium: p(17, FontWeight.w600),
+    titleSmall: p(15, FontWeight.w600),
+    bodyLarge: p(16, FontWeight.w400, h: 1.4),
+    bodyMedium: p(14, FontWeight.w400, h: 1.4),
+    bodySmall: p(12.5, FontWeight.w400, h: 1.35),
+    labelLarge: p(13.5, FontWeight.w500),
+    labelMedium: p(12, FontWeight.w500),
+    labelSmall: p(11, FontWeight.w500, ls: 0.2),
   );
 }
