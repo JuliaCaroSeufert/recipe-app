@@ -9,6 +9,7 @@ import '../../utils/dates.dart';
 import '../../widgets/slot_card.dart';
 import '../../widgets/ui_kit.dart';
 import '../archive/archive_screen.dart';
+import '../plan/meal_picker.dart';
 import '../recipes/recipe_detail.dart';
 import '../recipes/recipes_screen.dart';
 import 'generate_screen.dart';
@@ -33,6 +34,13 @@ class _WeekScreenState extends State<WeekScreen> {
       appBar: AppBar(
         title: const Text('Wochenplan'),
         actions: [
+          if (plan != null)
+            IconButton(
+              icon: const Icon(Icons.view_carousel_outlined),
+              tooltip: 'Vorschläge durchblättern',
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const MealPickerScreen())),
+            ),
           IconButton(
             icon: const Icon(Icons.history_rounded),
             tooltip: 'Archiv & Recycling',
@@ -177,8 +185,13 @@ class _PlanBody extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
+              leading: const Icon(Icons.view_carousel_outlined),
+              title: const Text('Vorschläge durchblättern'),
+              onTap: () => Navigator.pop(context, 'browse'),
+            ),
+            ListTile(
               leading: const Icon(Icons.restaurant_menu_rounded),
-              title: const Text('Rezept wählen'),
+              title: const Text('Rezept aus Liste wählen'),
               onTap: () => Navigator.pop(context, 'pick'),
             ),
             if (recipeId != null)
@@ -205,6 +218,13 @@ class _PlanBody extends StatelessWidget {
     if (action == null || !context.mounted) return;
 
     switch (action) {
+      case 'browse':
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MealPickerScreen(slots: [(dayIndex, meal)]),
+          ),
+        );
       case 'pick':
         final recipe = await Navigator.push<Recipe>(
           context,

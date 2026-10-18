@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 
 import '../../models/nutrition.dart';
 import '../../models/week_plan.dart';
+import '../../models/recipe.dart';
 import '../../state/app_state.dart';
 import '../../theme.dart';
 import '../../utils/dates.dart';
+import '../../widgets/recipe_photo.dart';
 import '../../widgets/slot_card.dart';
 import '../../widgets/ui_kit.dart';
 import '../recipes/instagram_import.dart';
@@ -48,6 +50,8 @@ class TodayScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const NutritionScreen()))),
               const SizedBox(height: 22),
             ],
+            const _Featured(),
+            const SizedBox(height: 22),
             _QuickActions(
               onPlan: () => _openGenerate(context),
               onShop: () => onOpenTab(3),
@@ -316,6 +320,66 @@ class _Action extends StatelessWidget {
               style: Theme.of(context).textTheme.labelMedium),
         ],
       ),
+    );
+  }
+}
+
+class _Featured extends StatelessWidget {
+  const _Featured();
+
+  @override
+  Widget build(BuildContext context) {
+    final app = context.watch<AppState>();
+    final recipes = app.recipes;
+    if (recipes.isEmpty) return const SizedBox.shrink();
+    final now = DateTime.now();
+    final doy = now.difference(DateTime(now.year)).inDays;
+    final Recipe r = recipes[doy % recipes.length];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeader('Tipp des Tages'),
+        SoftCard(
+          padding: EdgeInsets.zero,
+          onTap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => RecipeDetailScreen(recipeId: r.id))),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RecipePhoto(
+                  recipe: r,
+                  width: double.infinity,
+                  height: 170,
+                  radius: 0,
+                  emojiSize: 72),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(r.title,
+                        style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final h in r.highlights)
+                          Pill(h,
+                              color: AppColors.greenDeep,
+                              background: const Color(0x141E9E63)),
+                        Pill('${r.prepMinutes} Min',
+                            icon: Icons.schedule_rounded),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

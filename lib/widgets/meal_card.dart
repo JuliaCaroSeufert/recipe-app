@@ -8,12 +8,11 @@ class MealCard extends StatelessWidget {
   final String mealLabel;
   final IconData mealIcon;
   final Color accent;
-  final String emoji;
-  final String seed;
+  final Widget leading;
   final String title;
   final String? subtitle;
   final List<Widget> badges;
-  final bool empty;
+  final bool dim;
   final VoidCallback onTap;
 
   const MealCard({
@@ -21,13 +20,12 @@ class MealCard extends StatelessWidget {
     required this.mealLabel,
     required this.mealIcon,
     required this.accent,
-    required this.emoji,
-    required this.seed,
+    required this.leading,
     required this.title,
     required this.onTap,
     this.subtitle,
     this.badges = const [],
-    this.empty = false,
+    this.dim = false,
   });
 
   @override
@@ -38,18 +36,7 @@ class MealCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       child: Row(
         children: [
-          if (empty)
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: scheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(Icons.add, color: scheme.onSurfaceVariant),
-            )
-          else
-            EmojiTile(emoji: emoji, seed: seed),
+          SizedBox(width: 56, height: 56, child: leading),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -73,7 +60,7 @@ class MealCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: empty ? scheme.onSurfaceVariant : null,
+                        color: dim ? scheme.onSurfaceVariant : null,
                       ),
                 ),
                 if (subtitle != null)

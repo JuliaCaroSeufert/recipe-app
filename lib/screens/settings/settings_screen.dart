@@ -14,11 +14,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _dislikeCtrl = TextEditingController();
   late final TextEditingController _geminiCtrl =
       TextEditingController(text: context.read<AppState>().household.geminiApiKey);
+  late final TextEditingController _pexelsCtrl =
+      TextEditingController(text: context.read<AppState>().household.pexelsApiKey);
 
   @override
   void dispose() {
     _dislikeCtrl.dispose();
     _geminiCtrl.dispose();
+    _pexelsCtrl.dispose();
     super.dispose();
   }
 
@@ -27,6 +30,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     FocusScope.of(context).unfocus();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('KI-Schlüssel gespeichert.')),
+    );
+  }
+
+  void _savePexelsKey(AppState app) {
+    app.saveHousehold(app.household.copyWith(pexelsApiKey: _pexelsCtrl.text.trim()));
+    FocusScope.of(context).unfocus();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Foto-Schlüssel gespeichert.')),
     );
   }
 
@@ -161,6 +172,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       color: Theme.of(context).colorScheme.primary,
                     ),
               ),
+            ),
+
+          _title('Rezept-Fotos (Pexels)'),
+          Text(
+            'Mit einem kostenlosen Pexels-Schlüssel zeigt die App echte '
+            'Fotos zu jedem Rezept (lädt automatisch nach). Gratis holen unter '
+            'pexels.com/api – ohne Kreditkarte. Ohne Schlüssel gibt es '
+            'stilvolle Farb-Kacheln.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _pexelsCtrl,
+                  obscureText: true,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration: const InputDecoration(
+                    hintText: 'Pexels-Schlüssel',
+                    isDense: true,
+                  ),
+                  onSubmitted: (_) => _savePexelsKey(app),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton.filledTonal(
+                onPressed: () => _savePexelsKey(app),
+                icon: const Icon(Icons.save),
+              ),
+            ],
+          ),
+          if (h.hasPhotoKey)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text('✓ Fotos aktiv',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                      )),
             ),
 
           _title('Rezepte'),

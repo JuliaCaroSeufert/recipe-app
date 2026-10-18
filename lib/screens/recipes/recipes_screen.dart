@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/recipe.dart';
 import '../../state/app_state.dart';
 import '../../theme.dart';
+import '../../widgets/recipe_photo.dart';
 import '../../widgets/ui_kit.dart';
 import 'instagram_import.dart';
 import 'recipe_detail.dart';
@@ -207,45 +208,56 @@ class RecipeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return SoftCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          EmojiTile(emoji: recipe.emoji, seed: recipe.title, size: 64),
+          RecipePhoto(
+              recipe: recipe, width: 92, height: 92, emojiSize: 40, radius: 16),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(recipe.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleSmall),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    Pill('${recipe.prepMinutes} Min',
-                        icon: Icons.schedule_rounded),
-                    Pill('${recipe.nutritionPerServing.kcal.round()} kcal',
-                        icon: Icons.local_fire_department_rounded),
-                    if (recipe.isVegan)
-                      const Pill('vegan',
-                          background: Color(0x1A1E9E63),
-                          color: AppColors.greenDeep)
-                    else if (recipe.isVegetarian)
-                      const Pill('veggie'),
-                    if (recipe.batchFriendly)
-                      Pill('vorkochen',
-                          icon: Icons.inventory_2_outlined,
-                          color: scheme.secondary,
-                          background: scheme.secondary.withValues(alpha: 0.12)),
-                  ],
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(recipe.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final h in recipe.highlights)
+                        Pill(h,
+                            color: AppColors.greenDeep,
+                            background: const Color(0x141E9E63)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.schedule_rounded,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      const SizedBox(width: 4),
+                      Text('${recipe.prepMinutes} Min',
+                          style: Theme.of(context).textTheme.bodySmall),
+                      const SizedBox(width: 12),
+                      Icon(Icons.local_fire_department_rounded,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      const SizedBox(width: 4),
+                      Text('${recipe.nutritionPerServing.kcal.round()} kcal',
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],

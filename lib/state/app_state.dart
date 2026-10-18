@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../data/repository.dart';
 import '../logic/nutrition_calc.dart';
+import '../logic/photo_service.dart';
 import '../logic/plan_generator.dart';
 import '../logic/shopping_list.dart';
 import '../models/household.dart';
@@ -100,6 +101,26 @@ class AppState extends ChangeNotifier {
     await _repo.restoreSeedRecipes();
     _recipes = await _repo.loadRecipes();
     notifyListeners();
+  }
+
+  // --- Photos (lazy, via Pexels) ----------------------------------------
+  final Set<String> _photoTried = {};
+
+  /// Fetches and caches a real photo for [recipe] when a Pexels key is set and
+  /// the recipe has none yet. Safe to call repeatedly from the UI.
+  Future<void> ensurePhotoFor(Recipe recipe) async {
+    if (recipe.imageUrl.isNotEmpty) return;
+    if (!_household.hasPhotoKey) return;
+    if (!_photoTried.add(recipe.id)) return; // already tried this session
+    final url = await fetchPexelsPhotoUrl(
+      '${recipe.title} food dish',
+      _household.pexelsApiKey,
+    );
+    if (url == null || url.isEmpty) return;
+    // Re-read the current version in case it changed meanwhile.
+    final current = recipeById(recipe.id);
+    if (current == null || current.imageUrl.isNotEmpty) return;
+    await saveRecipe(current.copyWith(imageUrl: url));
   }
 
   // --- Plans -------------------------------------------------------------

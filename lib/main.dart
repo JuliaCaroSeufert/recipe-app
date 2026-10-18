@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'data/repository.dart';
 import 'screens/home_shell.dart';
+import 'screens/onboarding/onboarding_screen.dart';
 import 'services/share_service.dart';
 import 'state/app_state.dart';
 import 'theme.dart';
@@ -43,7 +44,10 @@ class EssensplanApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: const HomeShell(),
+      home: Consumer<AppState>(
+        builder: (_, app, _) =>
+            app.household.onboarded ? const HomeShell() : const OnboardingScreen(),
+      ),
     );
   }
 }

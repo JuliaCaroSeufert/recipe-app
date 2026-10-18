@@ -7,6 +7,7 @@ import '../../state/app_state.dart';
 import '../../theme.dart';
 import '../../utils/dates.dart';
 import '../../widgets/nutrition_widgets.dart';
+import '../../widgets/recipe_photo.dart';
 import '../../widgets/ui_kit.dart';
 import 'recipe_edit.dart';
 
@@ -39,32 +40,40 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         slivers: [
           SliverAppBar(
             pinned: true,
-            expandedHeight: 220,
+            expandedHeight: 260,
             backgroundColor: AppColors.tileFor(recipe.title),
-            foregroundColor: AppColors.ink,
+            foregroundColor: Colors.white,
+            iconTheme: const IconThemeData(color: Colors.white),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: () => Navigator.push(context,
+              _RoundIcon(
+                icon: Icons.edit_outlined,
+                onTap: () => Navigator.push(context,
                     MaterialPageRoute(
                         builder: (_) => RecipeEditScreen(existing: recipe))),
               ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline_rounded),
-                onPressed: () => _confirmDelete(context, app, recipe),
+              _RoundIcon(
+                icon: Icons.delete_outline_rounded,
+                onTap: () => _confirmDelete(context, app, recipe),
               ),
+              const SizedBox(width: 6),
             ],
             flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                color: AppColors.tileFor(recipe.title),
-                alignment: Alignment.center,
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(recipe.emoji, style: const TextStyle(fontSize: 72)),
-                  ],
-                ),
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  RecipePhoto(recipe: recipe, radius: 0, emojiSize: 84),
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0x55000000), Color(0x00000000),
+                          Color(0x00000000)],
+                        stops: [0, 0.4, 1],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -297,6 +306,31 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('"${recipe.title}" eingeplant.')));
     }
+  }
+}
+
+class _RoundIcon extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _RoundIcon({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 8),
+      child: Material(
+        color: Colors.black.withValues(alpha: 0.28),
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Icon(icon, size: 20, color: Colors.white),
+          ),
+        ),
+      ),
+    );
   }
 }
 

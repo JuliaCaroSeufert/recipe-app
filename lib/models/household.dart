@@ -16,6 +16,12 @@ class Household {
   /// on this device only). Empty = AI import off, local parsing is used.
   final String geminiApiKey;
 
+  /// Optional free Pexels API key for real recipe photos (stored locally).
+  final String pexelsApiKey;
+
+  /// Whether the first-run intro has been completed.
+  final bool onboarded;
+
   const Household({
     this.persons = 2,
     this.dislikes = const [],
@@ -23,9 +29,12 @@ class Household {
     this.veganOnly = false,
     this.weeklyVarietyTarget = 20,
     this.geminiApiKey = '',
+    this.pexelsApiKey = '',
+    this.onboarded = false,
   });
 
   bool get hasAiKey => geminiApiKey.trim().isNotEmpty;
+  bool get hasPhotoKey => pexelsApiKey.trim().isNotEmpty;
 
   Household copyWith({
     int? persons,
@@ -34,6 +43,8 @@ class Household {
     bool? veganOnly,
     int? weeklyVarietyTarget,
     String? geminiApiKey,
+    String? pexelsApiKey,
+    bool? onboarded,
   }) =>
       Household(
         persons: persons ?? this.persons,
@@ -42,6 +53,8 @@ class Household {
         veganOnly: veganOnly ?? this.veganOnly,
         weeklyVarietyTarget: weeklyVarietyTarget ?? this.weeklyVarietyTarget,
         geminiApiKey: geminiApiKey ?? this.geminiApiKey,
+        pexelsApiKey: pexelsApiKey ?? this.pexelsApiKey,
+        onboarded: onboarded ?? this.onboarded,
       );
 
   Map<String, dynamic> toJson() => {
@@ -51,6 +64,8 @@ class Household {
         'veganOnly': veganOnly,
         'weeklyVarietyTarget': weeklyVarietyTarget,
         'geminiApiKey': geminiApiKey,
+        'pexelsApiKey': pexelsApiKey,
+        'onboarded': onboarded,
       };
 
   factory Household.fromJson(Map<String, dynamic> j) => Household(
@@ -60,5 +75,7 @@ class Household {
         veganOnly: (j['veganOnly'] as bool?) ?? false,
         weeklyVarietyTarget: (j['weeklyVarietyTarget'] as num?)?.toInt() ?? 20,
         geminiApiKey: (j['geminiApiKey'] as String?) ?? '',
+        pexelsApiKey: (j['pexelsApiKey'] as String?) ?? '',
+        onboarded: (j['onboarded'] as bool?) ?? false,
       );
 }
