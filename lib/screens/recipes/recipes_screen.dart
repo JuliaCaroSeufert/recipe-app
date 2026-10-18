@@ -173,11 +173,17 @@ class _RecipeListViewState extends State<RecipeListView> {
                   title: 'Nichts gefunden',
                   message: 'Ändere die Suche oder die Filter.',
                 )
-              : ListView.separated(
+              : GridView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.66,
+                  ),
                   itemCount: recipes.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 10),
-                  itemBuilder: (context, i) => RecipeTile(
+                  itemBuilder: (context, i) => RecipeCard(
                     recipe: recipes[i],
                     onTap: () {
                       if (widget.onTap != null) {
@@ -200,55 +206,62 @@ class _RecipeListViewState extends State<RecipeListView> {
   }
 }
 
-class RecipeTile extends StatelessWidget {
+/// A photo-forward tile for the 2-column recipe grid (inspired by modern
+/// cooking apps): big photo on top, title + nutrient dots + quick meta below.
+class RecipeCard extends StatelessWidget {
   final Recipe recipe;
   final VoidCallback onTap;
 
-  const RecipeTile({super.key, required this.recipe, required this.onTap});
+  const RecipeCard({super.key, required this.recipe, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final onVar = Theme.of(context).colorScheme.onSurfaceVariant;
     return SoftCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(10),
-      child: Row(
+      padding: const EdgeInsets.all(8),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          RecipePhoto(
-              recipe: recipe, width: 92, height: 92, emojiSize: 40, radius: 16),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(recipe.title,
-                      maxLines: 2,
+          AspectRatio(
+            aspectRatio: 1.25,
+            child: RecipePhoto(recipe: recipe, radius: 16, emojiSize: 46),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Text(recipe.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(height: 1.1)),
+          ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: NutrientDots(recipe: recipe, max: 2),
+          ),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(2, 6, 2, 2),
+            child: Row(
+              children: [
+                Icon(Icons.schedule_rounded, size: 14, color: onVar),
+                const SizedBox(width: 4),
+                Text('${recipe.prepMinutes} Min',
+                    style: Theme.of(context).textTheme.bodySmall),
+                const SizedBox(width: 10),
+                Icon(Icons.local_fire_department_rounded, size: 14, color: onVar),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text('${recipe.nutritionPerServing.kcal.round()} kcal',
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall),
-                  const SizedBox(height: 8),
-                  NutrientDots(recipe: recipe),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(Icons.schedule_rounded,
-                          size: 14,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant),
-                      const SizedBox(width: 4),
-                      Text('${recipe.prepMinutes} Min',
-                          style: Theme.of(context).textTheme.bodySmall),
-                      const SizedBox(width: 12),
-                      Icon(Icons.local_fire_department_rounded,
-                          size: 14,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant),
-                      const SizedBox(width: 4),
-                      Text('${recipe.nutritionPerServing.kcal.round()} kcal',
-                          style: Theme.of(context).textTheme.bodySmall),
-                    ],
-                  ),
-                ],
-              ),
+                      style: Theme.of(context).textTheme.bodySmall),
+                ),
+              ],
             ),
           ),
         ],

@@ -17,10 +17,10 @@ Widget _iconTile(BuildContext context, String emoji) {
   return Container(
     decoration: BoxDecoration(
       color: scheme.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(18),
     ),
     alignment: Alignment.center,
-    child: Text(emoji, style: const TextStyle(fontSize: 24)),
+    child: Text(emoji, style: const TextStyle(fontSize: 34)),
   );
 }
 
@@ -44,7 +44,7 @@ Widget slotCard(
   switch (slot.type) {
     case SlotType.cook:
       leading = recipe != null
-          ? RecipePhoto(recipe: recipe, radius: 14, emojiSize: 26)
+          ? RecipePhoto(recipe: recipe, radius: 18, emojiSize: 34)
           : _iconTile(context, '🍽️');
       title = recipe?.title ?? 'Rezept';
       subtitle =
@@ -57,7 +57,7 @@ Widget slotCard(
       }
     case SlotType.leftover:
       leading = recipe != null
-          ? RecipePhoto(recipe: recipe, radius: 14, emojiSize: 26)
+          ? RecipePhoto(recipe: recipe, radius: 18, emojiSize: 34)
           : _iconTile(context, '♻️');
       title = recipe?.title ?? 'Reste';
       subtitle = 'Reste vom Vorkochen';

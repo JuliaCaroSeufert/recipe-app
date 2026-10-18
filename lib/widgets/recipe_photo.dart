@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../models/recipe.dart';
 import '../theme.dart';
+import 'net_image.dart';
 
 /// Shows a food photo for the recipe. Uses the recipe's own [Recipe.imageUrl]
-/// when set (e.g. from an import), otherwise a keyless, direct image URL
-/// (LoremFlickr) built from the recipe's keywords — this loads as a plain
-/// image, so it works in the browser and the app without any API call or key.
-/// Falls back to a tasteful gradient + emoji when offline / on error.
+/// when set (e.g. from an import), otherwise a keyless, direct image URL built
+/// from the recipe's keywords — this loads as a plain image (no API key), so it
+/// works both in the browser (via [netImage]'s web `<img>` path) and in the
+/// native app. Falls back to a tasteful gradient + emoji when offline / on
+/// error.
 class RecipePhoto extends StatelessWidget {
   final Recipe recipe;
   final double? width;
@@ -31,31 +33,25 @@ class RecipePhoto extends StatelessWidget {
       lock = (lock * 31 + c) & 0x7fffffff;
     }
     lock = lock % 100000;
-    return 'https://loremflickr.com/600/400/${recipe.photoKeywords}?lock=$lock';
+    // Keyless, always-returns-an-image food photo service. We derive a short
+    // English food description from the recipe keywords and keep a stable seed
+    // so each recipe always shows the same picture.
+    final subject = recipe.photoKeywords.replaceAll(',', ' ').trim();
+    final prompt = Uri.encodeComponent(
+        '$subject, plated dish, food photography, overhead, natural light, '
+        'appetizing, high detail');
+    return 'https://image.pollinations.ai/prompt/$prompt'
+        '?width=800&height=600&nologo=true&seed=$lock';
   }
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: SizedBox(
-        width: width,
-        height: height,
-        child: Image.network(
-          _url,
-          width: width,
-          height: height,
-          fit: BoxFit.cover,
-          gaplessPlayback: true,
-          frameBuilder: (context, child, frame, wasSync) {
-            if (wasSync || frame != null) return child;
-            return _placeholder(context);
-          },
-          loadingBuilder: (context, child, progress) =>
-              progress == null ? child : _placeholder(context),
-          errorBuilder: (_, _, _) => _placeholder(context),
-        ),
-      ),
+    return netImage(
+      _url,
+      width: width,
+      height: height,
+      radius: radius,
+      placeholder: _placeholder(context),
     );
   }
 

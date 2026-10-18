@@ -33,34 +33,35 @@ class MealCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return SoftCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       child: Row(
         children: [
-          SizedBox(width: 56, height: 56, child: leading),
-          const SizedBox(width: 12),
+          SizedBox(width: 84, height: 84, child: leading),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(mealIcon, size: 13, color: accent),
+                    Icon(mealIcon, size: 14, color: accent),
                     const SizedBox(width: 4),
                     Text(mealLabel.toUpperCase(),
                         style: Theme.of(context).textTheme.labelSmall?.copyWith(
                               color: accent,
                               fontWeight: FontWeight.w700,
-                              letterSpacing: 0.4,
+                              letterSpacing: 0.5,
                             )),
                   ],
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text(
                   title,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: dim ? scheme.onSurfaceVariant : null,
+                        height: 1.1,
                       ),
                 ),
                 if (subtitle != null)
