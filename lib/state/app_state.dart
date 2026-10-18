@@ -103,19 +103,15 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- Photos (lazy, via Pexels) ----------------------------------------
+  // --- Photos (lazy, keyless via Openverse) -----------------------------
   final Set<String> _photoTried = {};
 
-  /// Fetches and caches a real photo for [recipe] when a Pexels key is set and
-  /// the recipe has none yet. Safe to call repeatedly from the UI.
+  /// Fetches and caches a real (keyless) photo for [recipe] when it has none
+  /// yet. Safe to call repeatedly from the UI.
   Future<void> ensurePhotoFor(Recipe recipe) async {
     if (recipe.imageUrl.isNotEmpty) return;
-    if (!_household.hasPhotoKey) return;
     if (!_photoTried.add(recipe.id)) return; // already tried this session
-    final url = await fetchPexelsPhotoUrl(
-      '${recipe.title} food dish',
-      _household.pexelsApiKey,
-    );
+    final url = await fetchFoodPhotoUrl(recipe.title);
     if (url == null || url.isEmpty) return;
     // Re-read the current version in case it changed meanwhile.
     final current = recipeById(recipe.id);
