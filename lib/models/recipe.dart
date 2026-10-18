@@ -68,6 +68,48 @@ class Recipe {
 
   bool get isQuick => prepMinutes <= 30;
 
+  /// Comma-separated English-ish keywords for a direct photo lookup, derived
+  /// from the title (common German food words are mapped to English so photo
+  /// search matches better).
+  String get photoKeywords {
+    const map = {
+      'linsen': 'lentils', 'linsen-': 'lentils', 'kichererbsen': 'chickpea',
+      'kichererbse': 'chickpea', 'bohnen': 'beans', 'bohne': 'beans',
+      'kürbis': 'pumpkin', 'kürbissuppe': 'pumpkin,soup',
+      'süßkartoffel': 'sweet,potato', 'hähnchen': 'chicken',
+      'hähnchen-': 'chicken', 'pute': 'turkey', 'rind': 'beef',
+      'rinder': 'beef', 'lachs': 'salmon', 'nudeln': 'pasta',
+      'pasta': 'pasta', 'spaghetti': 'pasta', 'suppe': 'soup',
+      'salat': 'salad', 'curry': 'curry', 'dal': 'dal,curry',
+      'chili': 'chili', 'shakshuka': 'shakshuka', 'falafel': 'falafel',
+      'gnocchi': 'gnocchi', 'couscous': 'couscous', 'omelett': 'omelette',
+      'bowl': 'bowl', 'wok': 'stir,fry', 'minestrone': 'minestrone,soup',
+      'spinat': 'spinach', 'tofu': 'tofu', 'feta': 'feta',
+      'halloumi': 'halloumi', 'ofengemüse': 'roasted,vegetables',
+      'rote': 'beetroot', 'bete': 'beetroot', 'mangold': 'chard',
+      'pfanne': '', 'bolognese': 'bolognese', 'dal-': 'dal',
+    };
+    const stop = {
+      'mit', 'und', 'der', 'die', 'das', 'vom', 'im', 'auf', 'in', 'aus',
+      'cremige', 'cremiges', 'schnelle', 'schnelles', 'einfache', 'bunte',
+      'würziges', 'würzige', 'gefüllte', 'a', 'la',
+    };
+    final words = <String>[];
+    for (final raw in title.toLowerCase().split(RegExp(r'[\s\-&,]+'))) {
+      final w = raw.replaceAll(RegExp(r'[^a-zäöüß]'), '');
+      if (w.isEmpty || stop.contains(w)) continue;
+      final mapped = map[w];
+      if (mapped != null) {
+        if (mapped.isNotEmpty) words.add(mapped);
+      } else {
+        words.add(w);
+      }
+      if (words.length >= 3) break;
+    }
+    if (words.isEmpty) words.add('food');
+    return '${words.join(',')},food,meal';
+  }
+
   /// Up to two short, appetising badges derived from the recipe (for cards).
   List<String> get highlights {
     final out = <String>[];
