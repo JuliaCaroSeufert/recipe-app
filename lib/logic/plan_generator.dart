@@ -6,6 +6,7 @@ import '../models/household.dart';
 import '../models/nutrition.dart';
 import '../models/recipe.dart';
 import '../models/week_plan.dart';
+import 'text_match.dart';
 
 const _uuid = Uuid();
 
@@ -61,13 +62,24 @@ const List<String> _focusNutrients = [
 ];
 
 /// Returns the recipes left after applying the household diet + dislikes.
+/// Dislikes are matched tolerantly (case, umlauts, spelling, plural) so adding
+/// "Pak Choi" also catches "pak choi", "pakchoi" etc.
 List<Recipe> filterForHousehold(Iterable<Recipe> recipes, Household h) {
-  final dislikes = h.dislikes.map((d) => d.toLowerCase().trim()).toSet();
+  final dislikeForms = [
+    for (final d in h.dislikes)
+      if (expandTerm(d).isNotEmpty) expandTerm(d),
+  ];
   return recipes.where((r) {
     if (h.veganOnly && !r.isVegan) return false;
     if (h.vegetarianOnly && !r.isVegetarian) return false;
-    if (dislikes.isNotEmpty && r.matchTerms.any(dislikes.contains)) {
-      return false;
+    if (dislikeForms.isNotEmpty) {
+      final hay = <String>{};
+      for (final term in r.matchTerms) {
+        hay.addAll(expandTerm(term));
+      }
+      for (final needles in dislikeForms) {
+        if (matchesAny(hay, needles)) return false;
+      }
     }
     return true;
   }).toList();

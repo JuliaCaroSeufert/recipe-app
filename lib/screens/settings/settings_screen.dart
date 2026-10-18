@@ -80,7 +80,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           _title('Mag ich nicht'),
           Text(
-            'Gerichte mit diesen Zutaten werden bei Vorschlägen übersprungen.',
+            'Gerichte mit diesen Zutaten werden bei Vorschlägen übersprungen. '
+            'Schreibweise, Groß-/Kleinschreibung und Ein-/Mehrzahl sind egal.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 8),

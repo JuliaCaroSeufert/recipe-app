@@ -129,6 +129,35 @@ void main() {
     });
   });
 
+  group('tolerant dislikes', () {
+    bool hasProduce(List<Recipe> rs, String key) =>
+        rs.any((r) => r.produceKeys.any(
+            (p) => p.toLowerCase().contains(key.toLowerCase())));
+
+    test('excludes a dislike regardless of case/spelling/spaces', () {
+      for (final d in ['Pak Choi', 'pak choi', 'PAKCHOI', 'pak-choi']) {
+        final filtered =
+            filterForHousehold(seedRecipes, Household(dislikes: [d]));
+        expect(hasProduce(filtered, 'Pak Choi'), isFalse, reason: d);
+      }
+    });
+
+    test('singular and plural both exclude beans', () {
+      for (final d in ['bohne', 'Bohnen']) {
+        final filtered =
+            filterForHousehold(seedRecipes, Household(dislikes: [d]));
+        expect(hasProduce(filtered, 'bohne'), isFalse, reason: d);
+      }
+    });
+
+    test('a compound dislike word still catches variants', () {
+      // "Zwiebel" should also remove recipes with "Frühlingszwiebel".
+      final filtered = filterForHousehold(
+          seedRecipes, const Household(dislikes: ['Zwiebel']));
+      expect(hasProduce(filtered, 'zwiebel'), isFalse);
+    });
+  });
+
   group('analysePlan', () {
     test('scales nutrition by number of persons', () {
       final plan = WeekPlan.blank(
