@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../services/share_service.dart';
+import 'home/today_screen.dart';
 import 'recipes/instagram_import.dart';
 import 'recipes/recipes_screen.dart';
-import 'settings/settings_screen.dart';
 import 'shopping/shopping_screen.dart';
 import 'week/week_screen.dart';
 
@@ -16,6 +16,8 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
+
+  void _open(int i) => setState(() => _index = i);
 
   @override
   void initState() {
@@ -31,40 +33,39 @@ class _HomeShellState extends State<HomeShell> {
     ShareService.instance.start();
   }
 
-  static const _screens = [
-    WeekScreen(),
-    RecipesScreen(),
-    ShoppingScreen(),
-    SettingsScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final screens = [
+      TodayScreen(onOpenTab: _open),
+      const WeekScreen(),
+      const RecipesScreen(),
+      const ShoppingScreen(),
+    ];
     return Scaffold(
-      body: IndexedStack(index: _index, children: _screens),
+      body: IndexedStack(index: _index, children: screens),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
+        onDestinationSelected: _open,
         destinations: const [
           NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home_rounded),
+            label: 'Heute',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.calendar_today_outlined),
-            selectedIcon: Icon(Icons.calendar_today),
+            selectedIcon: Icon(Icons.calendar_today_rounded),
             label: 'Woche',
           ),
           NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book),
+            icon: Icon(Icons.restaurant_menu_outlined),
+            selectedIcon: Icon(Icons.restaurant_menu_rounded),
             label: 'Rezepte',
           ),
           NavigationDestination(
-            icon: Icon(Icons.shopping_cart_outlined),
-            selectedIcon: Icon(Icons.shopping_cart),
+            icon: Icon(Icons.shopping_basket_outlined),
+            selectedIcon: Icon(Icons.shopping_basket_rounded),
             label: 'Einkauf',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Einstellungen',
           ),
         ],
       ),

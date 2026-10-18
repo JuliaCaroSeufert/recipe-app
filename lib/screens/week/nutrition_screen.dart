@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../../logic/nutrition_calc.dart';
 import '../../state/app_state.dart';
+import '../../theme.dart';
 import '../../widgets/nutrition_widgets.dart';
+import '../../widgets/ui_kit.dart';
 
 /// Full nutrition breakdown for the current week.
 class NutritionScreen extends StatelessWidget {
@@ -34,6 +36,29 @@ class NutritionScreen extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 16),
+        SoftCard(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ProgressRing(
+                  value: a.perPersonPerDay.kcal / 2000,
+                  color: AppColors.amber,
+                  centerText: '${a.perPersonPerDay.kcal.round()}',
+                  label: 'kcal'),
+              ProgressRing(
+                  value: a.perPersonPerDay.protein / 60,
+                  color: AppColors.green,
+                  centerText: '${a.perPersonPerDay.protein.round()}g',
+                  label: 'Eiweiß'),
+              ProgressRing(
+                  value: a.perPersonPerDay.fiber / 30,
+                  color: AppColors.berry,
+                  centerText: '${a.perPersonPerDay.fiber.round()}g',
+                  label: 'Ballast.'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
         NutrientBars(values: a.perPersonPerDay),
         const SizedBox(height: 24),
         Card(

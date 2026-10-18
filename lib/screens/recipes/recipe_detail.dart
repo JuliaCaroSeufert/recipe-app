@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import '../../models/recipe.dart';
 import '../../models/week_plan.dart';
 import '../../state/app_state.dart';
+import '../../theme.dart';
 import '../../utils/dates.dart';
 import '../../widgets/nutrition_widgets.dart';
+import '../../widgets/ui_kit.dart';
 import 'recipe_edit.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
@@ -24,148 +26,211 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     final app = context.watch<AppState>();
     final recipe = app.recipeById(widget.recipeId);
     if (recipe == null) {
-      return const Scaffold(
-        body: Center(child: Text('Rezept nicht gefunden.')),
-      );
+      return const Scaffold(body: Center(child: Text('Rezept nicht gefunden.')));
     }
+    final scheme = Theme.of(context).colorScheme;
     final servings = _servings ?? app.household.persons;
-    final factor = recipe.baseServings == 0
-        ? 1.0
-        : servings / recipe.baseServings;
+    final factor =
+        recipe.baseServings == 0 ? 1.0 : servings / recipe.baseServings;
+    final n = recipe.nutritionPerServing;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(recipe.title),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Bearbeiten',
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => RecipeEditScreen(existing: recipe)),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            tooltip: 'Löschen',
-            onPressed: () => _confirmDelete(context, app, recipe),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-        children: [
-          Row(
-            children: [
-              Text(recipe.emoji, style: const TextStyle(fontSize: 44)),
-              const SizedBox(width: 12),
-              Expanded(
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            expandedHeight: 220,
+            backgroundColor: AppColors.tileFor(recipe.title),
+            foregroundColor: AppColors.ink,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () => Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (_) => RecipeEditScreen(existing: recipe))),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline_rounded),
+                onPressed: () => _confirmDelete(context, app, recipe),
+              ),
+            ],
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                color: AppColors.tileFor(recipe.title),
+                alignment: Alignment.center,
+                padding: const EdgeInsets.only(bottom: 8),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('${recipe.prepMinutes} Min · '
-                        '${recipe.nutritionPerServing.kcal.round()} kcal/Portion'),
-                    if (recipe.description.isNotEmpty) ...[
-                      const SizedBox(height: 4),
-                      Text(recipe.description,
-                          style: Theme.of(context).textTheme.bodySmall),
-                    ],
+                    Text(recipe.emoji, style: const TextStyle(fontSize: 72)),
                   ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              for (final t in recipe.tags) Chip(label: Text(t)),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Servings stepper
-          Row(
-            children: [
-              Text('Portionen', style: Theme.of(context).textTheme.titleSmall),
-              const Spacer(),
-              IconButton.filledTonal(
-                onPressed: servings > 1
-                    ? () => setState(() => _servings = servings - 1)
-                    : null,
-                icon: const Icon(Icons.remove),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text('$servings',
-                    style: Theme.of(context).textTheme.titleMedium),
-              ),
-              IconButton.filledTonal(
-                onPressed: () => setState(() => _servings = servings + 1),
-                icon: const Icon(Icons.add),
-              ),
-            ],
-          ),
-          const Divider(height: 28),
-
-          Text('Zutaten', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          for (final ing in recipe.ingredients)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 3),
-              child: Row(
-                children: [
-                  const Text('• '),
-                  Expanded(child: Text(ing.name)),
-                  Text(_amountLabel(ing.amount * factor, ing.unit),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          )),
-                ],
-              ),
             ),
-
-          const Divider(height: 28),
-          Text('Zubereitung', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          for (var i = 0; i < recipe.steps.length; i++)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 12,
-                    child: Text('${i + 1}',
-                        style: const TextStyle(fontSize: 12)),
+                  Text(recipe.title,
+                      style: Theme.of(context).textTheme.headlineSmall),
+                  if (recipe.description.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(recipe.description,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            )),
+                  ],
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      Pill('${recipe.prepMinutes} Min',
+                          icon: Icons.schedule_rounded),
+                      Pill('${n.kcal.round()} kcal',
+                          icon: Icons.local_fire_department_rounded),
+                      if (recipe.isVegan)
+                        const Pill('vegan',
+                            background: Color(0x1A1E9E63),
+                            color: AppColors.greenDeep)
+                      else if (recipe.isVegetarian)
+                        const Pill('vegetarisch'),
+                      if (recipe.batchFriendly)
+                        const Pill('gut vorzukochen',
+                            icon: Icons.inventory_2_outlined),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(child: Text(recipe.steps[i])),
+
+                  const SizedBox(height: 20),
+                  // Quick nutrition rings (per serving vs daily need).
+                  SoftCard(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ProgressRing(
+                            value: n.kcal / 2000,
+                            color: AppColors.amber,
+                            centerText: '${n.kcal.round()}',
+                            label: 'kcal'),
+                        ProgressRing(
+                            value: n.protein / 60,
+                            color: AppColors.green,
+                            centerText: '${n.protein.round()}g',
+                            label: 'Eiweiß'),
+                        ProgressRing(
+                            value: n.fiber / 30,
+                            color: AppColors.berry,
+                            centerText: '${n.fiber.round()}g',
+                            label: 'Ballast.'),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  // Servings stepper.
+                  Row(
+                    children: [
+                      Text('Portionen',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      const Spacer(),
+                      IconButton.filledTonal(
+                        onPressed: servings > 1
+                            ? () => setState(() => _servings = servings - 1)
+                            : null,
+                        icon: const Icon(Icons.remove_rounded),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('$servings',
+                            style: Theme.of(context).textTheme.titleLarge),
+                      ),
+                      IconButton.filledTonal(
+                        onPressed: () => setState(() => _servings = servings + 1),
+                        icon: const Icon(Icons.add_rounded),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+                  Text('Zutaten',
+                      style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  for (final ing in recipe.ingredients)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5),
+                      child: Row(
+                        children: [
+                          Icon(
+                            ing.countsAsVariety
+                                ? Icons.eco_rounded
+                                : Icons.circle,
+                            size: ing.countsAsVariety ? 16 : 7,
+                            color: ing.countsAsVariety
+                                ? AppColors.green
+                                : scheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(child: Text(ing.name)),
+                          Text(_amount(ing.amount * factor, ing.unit),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+
+                  const SizedBox(height: 16),
+                  Text('Zubereitung',
+                      style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  for (var i = 0; i < recipe.steps.length; i++)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 26,
+                            height: 26,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: AppColors.green.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(9),
+                            ),
+                            child: Text('${i + 1}',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge
+                                    ?.copyWith(color: AppColors.greenDeep)),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                              child: Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(recipe.steps[i]),
+                          )),
+                        ],
+                      ),
+                    ),
+
+                  const SizedBox(height: 18),
+                  Text('Nährwerte pro Portion',
+                      style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 10),
+                  NutrientBars(values: n),
                 ],
               ),
             ),
-
-          const Divider(height: 28),
-          Text('Nährwerte pro Portion',
-              style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 4),
-          Text('Balken = Anteil am Tagesbedarf einer Person',
-              style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 12),
-          NutrientBars(values: recipe.nutritionPerServing),
-
-          if (recipe.sourceUrl != null) ...[
-            const SizedBox(height: 16),
-            Text('Quelle: ${recipe.sourceUrl}',
-                style: Theme.of(context).textTheme.bodySmall),
-          ],
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _addToPlan(context, app, recipe, servings),
-        icon: const Icon(Icons.calendar_month),
+        onPressed: () => _addToPlan(context, app, recipe),
+        icon: const Icon(Icons.calendar_month_rounded),
         label: const Text('Zum Plan'),
       ),
     );
@@ -195,13 +260,11 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   }
 
   Future<void> _addToPlan(
-      BuildContext context, AppState app, Recipe recipe, int servings) async {
+      BuildContext context, AppState app, Recipe recipe) async {
     final plan = app.currentPlan;
     if (plan == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Plane zuerst eine Woche im Tab "Woche".')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Plane zuerst eine Woche im Tab "Woche".')));
       return;
     }
     final choice = await showModalBottomSheet<(int, MealType)>(
@@ -226,20 +289,18 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
       choice.$1,
       choice.$2,
       MealSlot(
-        type: SlotType.cook,
-        recipeId: recipe.id,
-        servings: app.household.persons,
-      ),
+          type: SlotType.cook,
+          recipeId: recipe.id,
+          servings: app.household.persons),
     );
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('"${recipe.title}" eingeplant.')),
-      );
+          SnackBar(content: Text('"${recipe.title}" eingeplant.')));
     }
   }
 }
 
-String _amountLabel(double amount, String unit) {
+String _amount(double amount, String unit) {
   if (amount <= 0) return '';
   final text = amount == amount.roundToDouble()
       ? amount.round().toString()

@@ -4,16 +4,25 @@ import 'package:provider/provider.dart';
 import '../../models/recipe.dart';
 import '../../models/week_plan.dart';
 import '../../state/app_state.dart';
+import '../../theme.dart';
 import '../../utils/dates.dart';
-import '../../widgets/nutrition_widgets.dart';
+import '../../widgets/slot_card.dart';
+import '../../widgets/ui_kit.dart';
 import '../archive/archive_screen.dart';
 import '../recipes/recipe_detail.dart';
 import '../recipes/recipes_screen.dart';
 import 'generate_screen.dart';
 import 'nutrition_screen.dart';
 
-class WeekScreen extends StatelessWidget {
+class WeekScreen extends StatefulWidget {
   const WeekScreen({super.key});
+
+  @override
+  State<WeekScreen> createState() => _WeekScreenState();
+}
+
+class _WeekScreenState extends State<WeekScreen> {
+  int _selected = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -22,264 +31,144 @@ class WeekScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mein Wochenplan'),
+        title: const Text('Wochenplan'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
+            icon: const Icon(Icons.history_rounded),
             tooltip: 'Archiv & Recycling',
             onPressed: () => Navigator.push(context,
                 MaterialPageRoute(builder: (_) => const ArchiveScreen())),
           ),
         ],
       ),
-      body: plan == null
-          ? _EmptyWeek()
-          : _PlanView(plan: plan),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.push(context,
             MaterialPageRoute(builder: (_) => const GenerateScreen())),
         icon: const Icon(Icons.auto_awesome),
         label: Text(plan == null ? 'Woche planen' : 'Neu planen'),
       ),
-    );
-  }
-}
-
-class _EmptyWeek extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('🥗', style: TextStyle(fontSize: 56)),
-            const SizedBox(height: 16),
-            Text('Noch kein Plan',
-                style: Theme.of(context).textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            Text(
-              'Lass dir eine ausgewogene Woche mit Mittag- und Abendessen '
-              'vorschlagen – mit Batch-Cooking, Bestell-Tagen und viel Gemüse.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
+      body: plan == null
+          ? EmptyState(
+              emoji: '🗓️',
+              title: 'Keine Woche geplant',
+              message:
+                  'Erstelle dir einen ausgewogenen Wochenplan für Mittag- und '
+                  'Abendessen – inklusive Batch-Cooking und Gemüse-Vielfalt.',
+              action: FilledButton.icon(
+                onPressed: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const GenerateScreen())),
+                icon: const Icon(Icons.auto_awesome),
+                label: const Text('Woche planen'),
+              ),
+            )
+          : _PlanBody(
+              plan: plan,
+              selected: _selected.clamp(0, plan.days.length - 1),
+              onSelect: (i) => setState(() => _selected = i),
             ),
-          ],
-        ),
-      ),
     );
   }
 }
 
-class _PlanView extends StatelessWidget {
+class _PlanBody extends StatelessWidget {
   final WeekPlan plan;
-  const _PlanView({required this.plan});
+  final int selected;
+  final ValueChanged<int> onSelect;
+  const _PlanBody(
+      {required this.plan, required this.selected, required this.onSelect});
 
   @override
   Widget build(BuildContext context) {
     final app = context.watch<AppState>();
     final analysis = app.currentAnalysis!;
-    final ppd = analysis.perPersonPerDay;
-
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 100),
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Text(
-            weekRangeLabel(plan.startDate, plan.days.length),
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                VarietyProgress(
-                  count: analysis.varietyCount,
-                  target: analysis.varietyTarget,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: StatTile(
-                        icon: Icons.local_fire_department,
-                        value: '${ppd.kcal.round()}',
-                        label: 'kcal / Tag',
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: StatTile(
-                        icon: Icons.egg_alt_outlined,
-                        value: '${ppd.protein.round()} g',
-                        label: 'Eiweiß / Tag',
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: StatTile(
-                        icon: Icons.grass,
-                        value: '${ppd.fiber.round()} g',
-                        label: 'Ballast. / Tag',
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const NutritionScreen())),
-                    icon: const Icon(Icons.insights, size: 18),
-                    label: const Text('Alle Nährwerte'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        for (var d = 0; d < plan.days.length; d++)
-          _DayCard(plan: plan, dayIndex: d),
-      ],
-    );
-  }
-}
-
-class _DayCard extends StatelessWidget {
-  final WeekPlan plan;
-  final int dayIndex;
-  const _DayCard({required this.plan, required this.dayIndex});
-
-  @override
-  Widget build(BuildContext context) {
-    final day = plan.days[dayIndex];
+    final day = plan.days[selected];
     final meals = day.meals.keys.toList()
       ..sort((a, b) => a.index.compareTo(b.index));
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 2, bottom: 2),
-              child: Text(
-                '${weekdayName(day.date)}, ${dayMonth(day.date)}',
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-            ),
-            for (final meal in meals)
-              _SlotRow(
-                plan: plan,
-                dayIndex: dayIndex,
-                meal: meal,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
-class _SlotRow extends StatelessWidget {
-  final WeekPlan plan;
-  final int dayIndex;
-  final MealType meal;
-
-  const _SlotRow({
-    required this.plan,
-    required this.dayIndex,
-    required this.meal,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final app = context.read<AppState>();
-    final slot = plan.days[dayIndex].slot(meal);
-    final recipe = app.recipeById(slot.recipeId);
-    final scheme = Theme.of(context).colorScheme;
-
-    String leading;
-    String titleText;
-    String? subtitle;
-
-    switch (slot.type) {
-      case SlotType.cook:
-        leading = recipe?.emoji ?? '🍽️';
-        titleText = recipe?.title ?? 'Rezept';
-        subtitle = '${recipe?.prepMinutes ?? 0} Min';
-      case SlotType.leftover:
-        leading = '♻️';
-        titleText = recipe?.title ?? 'Reste';
-        subtitle = 'Reste vom Vorkochen';
-      case SlotType.order:
-        leading = '🛵';
-        titleText = slot.note?.isNotEmpty == true ? slot.note! : 'Bestellen';
-        subtitle = 'Auswärts / Lieferung';
-      case SlotType.empty:
-        leading = '＋';
-        titleText = 'Hinzufügen';
-        subtitle = null;
-    }
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: () => _openSheet(context, app, slot, recipe?.id),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 44,
-              child: Column(
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      children: [
+        // Week variety + macros summary.
+        SoftCard(
+          onTap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const NutritionScreen())),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Text(meal.shortLabel,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
-                          )),
-                  const SizedBox(height: 2),
-                  Text(leading, style: const TextStyle(fontSize: 22)),
+                  Expanded(
+                    child: Text(
+                        weekRangeLabel(plan.startDate, plan.days.length),
+                        style: Theme.of(context).textTheme.titleMedium),
+                  ),
+                  const Icon(Icons.insights_rounded, size: 18),
                 ],
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: 12),
+              _VarietyBar(
+                  count: analysis.varietyCount, target: analysis.varietyTarget),
+              const SizedBox(height: 12),
+              Row(
                 children: [
-                  Text(titleText,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: slot.isEmpty ? scheme.onSurfaceVariant : null,
-                      )),
-                  if (subtitle != null)
-                    Text(subtitle,
-                        style: Theme.of(context).textTheme.bodySmall),
+                  Expanded(
+                      child: _MiniStat(
+                          value: '${analysis.perPersonPerDay.kcal.round()}',
+                          label: 'kcal / Tag')),
+                  Expanded(
+                      child: _MiniStat(
+                          value:
+                              '${analysis.perPersonPerDay.protein.round()} g',
+                          label: 'Eiweiß / Tag')),
+                  Expanded(
+                      child: _MiniStat(
+                          value: '${analysis.recipeMeals}',
+                          label: 'Gerichte')),
                 ],
               ),
-            ),
-            Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
-          ],
+            ],
+          ),
         ),
-      ),
+        const SizedBox(height: 16),
+
+        // Day selector strip.
+        SizedBox(
+          height: 66,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: plan.days.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 8),
+            itemBuilder: (context, i) => _DayChip(
+              date: plan.days[i].date,
+              selected: i == selected,
+              onTap: () => onSelect(i),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        Text('${weekdayName(day.date)}, ${dayMonth(day.date)}',
+            style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 10),
+
+        for (final meal in meals) ...[
+          slotCard(
+            context,
+            meal: meal,
+            slot: day.slot(meal),
+            recipe: app.recipeById(day.slot(meal).recipeId),
+            onTap: () => _openSheet(context, app, selected, meal),
+          ),
+          const SizedBox(height: 10),
+        ],
+      ],
     );
   }
 
   Future<void> _openSheet(
-    BuildContext context,
-    AppState app,
-    MealSlot slot,
-    String? recipeId,
-  ) async {
+      BuildContext context, AppState app, int dayIndex, MealType meal) async {
+    final slot = plan.days[dayIndex].slot(meal);
+    final recipeId = slot.recipeId;
     final action = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
@@ -288,24 +177,24 @@ class _SlotRow extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.restaurant_menu),
+              leading: const Icon(Icons.restaurant_menu_rounded),
               title: const Text('Rezept wählen'),
               onTap: () => Navigator.pop(context, 'pick'),
             ),
             if (recipeId != null)
               ListTile(
-                leading: const Icon(Icons.open_in_new),
+                leading: const Icon(Icons.open_in_new_rounded),
                 title: const Text('Rezept ansehen'),
                 onTap: () => Navigator.pop(context, 'view'),
               ),
             ListTile(
-              leading: const Icon(Icons.delivery_dining),
+              leading: const Icon(Icons.delivery_dining_rounded),
               title: const Text('Bestellen / auswärts'),
               onTap: () => Navigator.pop(context, 'order'),
             ),
             if (!slot.isEmpty)
               ListTile(
-                leading: const Icon(Icons.clear),
+                leading: const Icon(Icons.clear_rounded),
                 title: const Text('Leeren'),
                 onTap: () => Navigator.pop(context, 'clear'),
               ),
@@ -346,5 +235,127 @@ class _SlotRow extends StatelessWidget {
       case 'clear':
         await app.updateSlot(dayIndex, meal, const MealSlot.empty());
     }
+  }
+}
+
+class _DayChip extends StatelessWidget {
+  final DateTime date;
+  final bool selected;
+  final VoidCallback onTap;
+  const _DayChip(
+      {required this.date, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isToday = _sameDay(date, DateTime.now());
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: 52,
+        decoration: BoxDecoration(
+          color: selected ? scheme.primary : scheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _wd(date),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: selected ? Colors.white70 : scheme.onSurfaceVariant,
+                  ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              '${date.day}',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: selected ? Colors.white : scheme.onSurface,
+                  ),
+            ),
+            if (isToday)
+              Container(
+                margin: const EdgeInsets.only(top: 2),
+                width: 5,
+                height: 5,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: selected ? Colors.white : scheme.primary,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static bool _sameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  static String _wd(DateTime d) =>
+      const ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'][d.weekday - 1];
+}
+
+class _VarietyBar extends StatelessWidget {
+  final int count;
+  final int target;
+  const _VarietyBar({required this.count, required this.target});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final reached = count >= target;
+    final ratio = target == 0 ? 0.0 : (count / target).clamp(0.0, 1.0);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(reached ? '🥦' : '🥦',
+                style: const TextStyle(fontSize: 15)),
+            const SizedBox(width: 6),
+            Text('$count von $target Gemüse-Sorten',
+                style: Theme.of(context).textTheme.labelLarge),
+            const Spacer(),
+            if (reached)
+              Text('Ziel erreicht 🎉',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: AppColors.greenDeep,
+                      )),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: LinearProgressIndicator(
+            value: ratio,
+            minHeight: 10,
+            backgroundColor: scheme.surfaceContainerHighest,
+            color: reached ? AppColors.green : AppColors.berry,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MiniStat extends StatelessWidget {
+  final String value;
+  final String label;
+  const _MiniStat({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(value, style: Theme.of(context).textTheme.titleMedium),
+        Text(label,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                )),
+      ],
+    );
   }
 }

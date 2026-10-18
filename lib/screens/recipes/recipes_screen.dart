@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../models/recipe.dart';
 import '../../state/app_state.dart';
+import '../../theme.dart';
+import '../../widgets/ui_kit.dart';
 import 'instagram_import.dart';
 import 'recipe_detail.dart';
 import 'recipe_edit.dart';
@@ -18,35 +20,30 @@ class RecipesScreen extends StatelessWidget {
         title: const Text('Rezepte'),
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add_circle_outline_rounded),
             onSelected: (value) {
               if (value == 'manual') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RecipeEditScreen()),
-                );
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const RecipeEditScreen()));
               } else if (value == 'instagram') {
                 Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => const InstagramImportScreen()),
-                );
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const InstagramImportScreen()));
               }
             },
             itemBuilder: (_) => const [
               PopupMenuItem(
                 value: 'manual',
                 child: ListTile(
-                  leading: Icon(Icons.edit_note),
-                  title: Text('Eigenes Rezept'),
-                ),
+                    leading: Icon(Icons.edit_note_rounded),
+                    title: Text('Eigenes Rezept')),
               ),
               PopupMenuItem(
                 value: 'instagram',
                 child: ListTile(
-                  leading: Icon(Icons.photo_camera_back_outlined),
-                  title: Text('Aus Instagram importieren'),
-                ),
+                    leading: Icon(Icons.auto_awesome_rounded),
+                    title: Text('Aus Instagram importieren')),
               ),
             ],
           ),
@@ -66,10 +63,8 @@ class RecipePickerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(meal == null
-            ? 'Rezept wählen'
-            : 'Rezept für ${meal!.label}'),
-      ),
+          title: Text(
+              meal == null ? 'Rezept wählen' : 'Rezept für ${meal!.label}')),
       body: RecipeListView(
         restrictMeal: meal,
         onTap: (recipe) => Navigator.pop(context, recipe),
@@ -97,7 +92,7 @@ class _RecipeListViewState extends State<RecipeListView> {
     'schnell': 'Schnell',
     'vegetarisch': 'Vegetarisch',
     'vegan': 'Vegan',
-    'batch': 'Batch',
+    'batch': 'Vorkochen',
   };
 
   bool _matches(Recipe r) {
@@ -136,11 +131,11 @@ class _RecipeListViewState extends State<RecipeListView> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
           child: TextField(
             decoration: const InputDecoration(
               hintText: 'Rezept oder Zutat suchen',
-              prefixIcon: Icon(Icons.search),
+              prefixIcon: Icon(Icons.search_rounded),
               isDense: true,
             ),
             onChanged: (v) => setState(() => _query = v),
@@ -172,11 +167,15 @@ class _RecipeListViewState extends State<RecipeListView> {
         ),
         Expanded(
           child: recipes.isEmpty
-              ? const Center(child: Text('Keine Rezepte gefunden.'))
+              ? const EmptyState(
+                  emoji: '🔍',
+                  title: 'Nichts gefunden',
+                  message: 'Ändere die Suche oder die Filter.',
+                )
               : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 24),
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
                   itemCount: recipes.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 8),
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
                   itemBuilder: (context, i) => RecipeTile(
                     recipe: recipes[i],
                     onTap: () {
@@ -209,56 +208,47 @@ class RecipeTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Text(recipe.emoji, style: const TextStyle(fontSize: 30)),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    return SoftCard(
+      onTap: onTap,
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          EmojiTile(emoji: recipe.emoji, seed: recipe.title, size: 64),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(recipe.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
                   children: [
-                    Text(recipe.title,
-                        style: Theme.of(context).textTheme.titleSmall),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(Icons.schedule,
-                            size: 14, color: scheme.onSurfaceVariant),
-                        const SizedBox(width: 4),
-                        Text('${recipe.prepMinutes} Min',
-                            style: Theme.of(context).textTheme.bodySmall),
-                        const SizedBox(width: 10),
-                        Icon(Icons.local_fire_department,
-                            size: 14, color: scheme.onSurfaceVariant),
-                        const SizedBox(width: 4),
-                        Text('${recipe.nutritionPerServing.kcal.round()} kcal',
-                            style: Theme.of(context).textTheme.bodySmall),
-                        if (recipe.isVegan) ...[
-                          const SizedBox(width: 8),
-                          const Text('🌱', style: TextStyle(fontSize: 12)),
-                        ] else if (recipe.isVegetarian) ...[
-                          const SizedBox(width: 8),
-                          const Text('🥕', style: TextStyle(fontSize: 12)),
-                        ],
-                      ],
-                    ),
+                    Pill('${recipe.prepMinutes} Min',
+                        icon: Icons.schedule_rounded),
+                    Pill('${recipe.nutritionPerServing.kcal.round()} kcal',
+                        icon: Icons.local_fire_department_rounded),
+                    if (recipe.isVegan)
+                      const Pill('vegan',
+                          background: Color(0x1A1E9E63),
+                          color: AppColors.greenDeep)
+                    else if (recipe.isVegetarian)
+                      const Pill('veggie'),
+                    if (recipe.batchFriendly)
+                      Pill('vorkochen',
+                          icon: Icons.inventory_2_outlined,
+                          color: scheme.secondary,
+                          background: scheme.secondary.withValues(alpha: 0.12)),
                   ],
                 ),
-              ),
-              if (recipe.batchFriendly)
-                Tooltip(
-                  message: 'Gut zum Vorkochen',
-                  child: Icon(Icons.inventory_2_outlined,
-                      size: 18, color: scheme.primary),
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
