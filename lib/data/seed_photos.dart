@@ -2,4 +2,5 @@
 // Maps a seed recipe id to a real Spoonacular photo URL, fetched once in CI
 // (server-side, no CORS) so the photos load everywhere without a runtime API
 // call. Re-run the "Rezept-Fotos holen" workflow to refresh.
-const Map<String, String> kSeedPhotos = {};
+const Map<String, String> kSeedPhotos = {
+};
