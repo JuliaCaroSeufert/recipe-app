@@ -16,8 +16,13 @@ class Household {
   /// on this device only). Empty = AI import off, local parsing is used.
   final String geminiApiKey;
 
-  /// Optional free Pexels API key for real recipe photos (stored locally).
+  /// Optional free Pexels API key (legacy; kept only so older stored data
+  /// round-trips). No longer used for photos.
   final String pexelsApiKey;
+
+  /// Optional free Spoonacular API key for real recipe photos (stored locally,
+  /// on this device only). Empty = photos off, colourful emoji tiles are shown.
+  final String spoonacularApiKey;
 
   /// Whether the first-run intro has been completed.
   final bool onboarded;
@@ -30,11 +35,12 @@ class Household {
     this.weeklyVarietyTarget = 20,
     this.geminiApiKey = '',
     this.pexelsApiKey = '',
+    this.spoonacularApiKey = '',
     this.onboarded = false,
   });
 
   bool get hasAiKey => geminiApiKey.trim().isNotEmpty;
-  bool get hasPhotoKey => pexelsApiKey.trim().isNotEmpty;
+  bool get hasSpoonacularKey => spoonacularApiKey.trim().isNotEmpty;
 
   Household copyWith({
     int? persons,
@@ -44,6 +50,7 @@ class Household {
     int? weeklyVarietyTarget,
     String? geminiApiKey,
     String? pexelsApiKey,
+    String? spoonacularApiKey,
     bool? onboarded,
   }) =>
       Household(
@@ -54,6 +61,7 @@ class Household {
         weeklyVarietyTarget: weeklyVarietyTarget ?? this.weeklyVarietyTarget,
         geminiApiKey: geminiApiKey ?? this.geminiApiKey,
         pexelsApiKey: pexelsApiKey ?? this.pexelsApiKey,
+        spoonacularApiKey: spoonacularApiKey ?? this.spoonacularApiKey,
         onboarded: onboarded ?? this.onboarded,
       );
 
@@ -65,6 +73,7 @@ class Household {
         'weeklyVarietyTarget': weeklyVarietyTarget,
         'geminiApiKey': geminiApiKey,
         'pexelsApiKey': pexelsApiKey,
+        'spoonacularApiKey': spoonacularApiKey,
         'onboarded': onboarded,
       };
 
@@ -76,6 +85,7 @@ class Household {
         weeklyVarietyTarget: (j['weeklyVarietyTarget'] as num?)?.toInt() ?? 20,
         geminiApiKey: (j['geminiApiKey'] as String?) ?? '',
         pexelsApiKey: (j['pexelsApiKey'] as String?) ?? '',
+        spoonacularApiKey: (j['spoonacularApiKey'] as String?) ?? '',
         onboarded: (j['onboarded'] as bool?) ?? false,
       );
 }

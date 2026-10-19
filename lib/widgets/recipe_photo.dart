@@ -4,12 +4,10 @@ import '../models/recipe.dart';
 import '../theme.dart';
 import 'net_image.dart';
 
-/// Shows a food photo for the recipe. Uses the recipe's own [Recipe.imageUrl]
-/// when set (e.g. from an import), otherwise a keyless, direct image URL built
-/// from the recipe's keywords — this loads as a plain image (no API key), so it
-/// works both in the browser (via [netImage]'s web `<img>` path) and in the
-/// native app. Falls back to a tasteful gradient + emoji when offline / on
-/// error.
+/// Shows a food photo for the recipe from its [Recipe.imageUrl] (filled by the
+/// Spoonacular photo loader in Settings, or an import). Rendered via [netImage]
+/// so it also shows in the browser (web `<img>` path, no CORS). When no photo
+/// is set yet it falls back to a tasteful gradient + emoji tile.
 class RecipePhoto extends StatelessWidget {
   final Recipe recipe;
   final double? width;
@@ -26,28 +24,20 @@ class RecipePhoto extends StatelessWidget {
     this.emojiSize = 34,
   });
 
-  String get _url {
-    if (recipe.imageUrl.isNotEmpty) return recipe.imageUrl;
-    var lock = 0;
-    for (final c in recipe.id.codeUnits) {
-      lock = (lock * 31 + c) & 0x7fffffff;
-    }
-    lock = lock % 100000;
-    // Keyless, always-returns-an-image food photo service. We derive a short
-    // English food description from the recipe keywords and keep a stable seed
-    // so each recipe always shows the same picture.
-    final subject = recipe.photoKeywords.replaceAll(',', ' ').trim();
-    final prompt = Uri.encodeComponent(
-        '$subject, plated dish, food photography, overhead, natural light, '
-        'appetizing, high detail');
-    return 'https://image.pollinations.ai/prompt/$prompt'
-        '?width=800&height=600&nologo=true&seed=$lock';
-  }
-
   @override
   Widget build(BuildContext context) {
+    if (recipe.imageUrl.isEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: SizedBox(
+          width: width,
+          height: height,
+          child: _placeholder(context),
+        ),
+      );
+    }
     return netImage(
-      _url,
+      recipe.imageUrl,
       width: width,
       height: height,
       radius: radius,

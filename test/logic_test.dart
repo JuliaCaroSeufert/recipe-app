@@ -2,6 +2,7 @@ import 'package:essensplan/data/seed_recipes.dart';
 import 'package:essensplan/logic/nutrition_calc.dart';
 import 'package:essensplan/logic/plan_generator.dart';
 import 'package:essensplan/logic/shopping_list.dart';
+import 'package:essensplan/logic/spoonacular.dart';
 import 'package:essensplan/models/household.dart';
 import 'package:essensplan/models/recipe.dart';
 import 'package:essensplan/models/week_plan.dart';
@@ -225,6 +226,47 @@ void main() {
                   type: SlotType.leftover, recipeId: 'seed-linsen-dal'));
       final sections = buildShoppingList(plan, recipesById);
       expect(sections, isEmpty);
+    });
+  });
+
+  group('spoonacular helpers', () {
+    test('builds a short English query from a German title', () {
+      final dal = seedRecipes.firstWhere((r) => r.id == 'seed-linsen-dal');
+      final q = spoonacularQuery(dal);
+      expect(q.contains('food'), isFalse);
+      expect(q.contains('meal'), isFalse);
+      expect(q.toLowerCase(), contains('dal'));
+      expect(q.split(' ').length, lessThanOrEqualTo(3));
+    });
+
+    test('upgrades a Spoonacular image URL to a crisp size', () {
+      expect(
+        bestSpoonacularImageUrl(
+            image: 'https://img.spoonacular.com/recipes/716429-312x231.jpg'),
+        'https://img.spoonacular.com/recipes/716429-636x393.jpg',
+      );
+    });
+
+    test('builds an image URL from an id when none is given', () {
+      expect(bestSpoonacularImageUrl(id: 12345),
+          'https://img.spoonacular.com/recipes/12345-636x393.jpg');
+      expect(bestSpoonacularImageUrl(), isNull);
+    });
+
+    test('leaves non-Spoonacular publisher URLs unchanged', () {
+      const url = 'https://example.com/photos/curry.jpg';
+      expect(bestSpoonacularImageUrl(image: url), url);
+    });
+
+    test('parses the first result image from a search body', () {
+      final json = {
+        'results': [
+          {'id': 716429, 'image': 'https://img.spoonacular.com/recipes/716429-312x231.jpg'},
+        ],
+      };
+      expect(parseSpoonacularImage(json),
+          'https://img.spoonacular.com/recipes/716429-636x393.jpg');
+      expect(parseSpoonacularImage({'results': []}), isNull);
     });
   });
 }

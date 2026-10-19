@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../logic/spoonacular.dart';
 import '../../state/app_state.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -14,11 +15,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _dislikeCtrl = TextEditingController();
   late final TextEditingController _geminiCtrl =
       TextEditingController(text: context.read<AppState>().household.geminiApiKey);
+  late final TextEditingController _spoonCtrl = TextEditingController(
+      text: context.read<AppState>().household.spoonacularApiKey);
+
+  bool _loadingPhotos = false;
+  int _photoDone = 0;
+  int _photoTotal = 0;
 
   @override
   void dispose() {
     _dislikeCtrl.dispose();
     _geminiCtrl.dispose();
+    _spoonCtrl.dispose();
     super.dispose();
   }
 
@@ -27,6 +35,74 @@ class _SettingsScreenState extends State<SettingsScreen> {
     FocusScope.of(context).unfocus();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('KI-Schlüssel gespeichert.')),
+    );
+  }
+
+  void _saveSpoonKey(AppState app) {
+    app.saveHousehold(
+        app.household.copyWith(spoonacularApiKey: _spoonCtrl.text.trim()));
+    FocusScope.of(context).unfocus();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Spoonacular-Schlüssel gespeichert.')),
+    );
+  }
+
+  /// Fetches a real photo for each recipe and stores it locally. With
+  /// [overwrite] it also replaces photos that are already set.
+  Future<void> _loadPhotos(AppState app, {bool overwrite = false}) async {
+    final key = _spoonCtrl.text.trim();
+    if (key.isEmpty) {
+      _saveSpoonKey(app);
+      return;
+    }
+    // Persist the key first so it's saved even if the user typed a new one.
+    if (key != app.household.spoonacularApiKey) {
+      await app.saveHousehold(app.household.copyWith(spoonacularApiKey: key));
+    }
+    if (!mounted) return;
+    final todo = app.recipes
+        .where((r) => overwrite || r.imageUrl.isEmpty)
+        .toList();
+    if (todo.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Alle Rezepte haben schon ein Foto. 🎉')),
+      );
+      return;
+    }
+    setState(() {
+      _loadingPhotos = true;
+      _photoDone = 0;
+      _photoTotal = todo.length;
+    });
+    FocusScope.of(context).unfocus();
+
+    var updated = 0;
+    String? errorMessage;
+    for (final r in todo) {
+      try {
+        final url = await fetchSpoonacularImage(spoonacularQuery(r), apiKey: key);
+        if (url != null) {
+          await app.saveRecipe(r.copyWith(imageUrl: url));
+          updated++;
+        }
+      } on SpoonacularException catch (e) {
+        errorMessage = e.message;
+        break;
+      } catch (e) {
+        errorMessage = 'Unerwarteter Fehler: $e';
+        break;
+      }
+      if (!mounted) return;
+      setState(() => _photoDone++);
+    }
+
+    if (!mounted) return;
+    setState(() => _loadingPhotos = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(errorMessage ??
+            '$updated ${updated == 1 ? 'Foto' : 'Fotos'} geladen. 📸'),
+      ),
     );
   }
 
@@ -163,13 +239,80 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
 
-          _title('Rezept-Fotos'),
+          _title('Rezept-Fotos (Spoonacular)'),
           Text(
-            'Echte Fotos werden automatisch zu jedem Rezept geladen (frei '
-            'lizenzierte Bilder, kein Schlüssel nötig). Ohne Internet gibt es '
-            'stilvolle Farb-Kacheln mit Emoji.',
+            'Mit einem kostenlosen Spoonacular-Schlüssel lädt die App echte, '
+            'hochwertige Fotos zu deinen Rezepten. Schlüssel gratis holen unter '
+            'spoonacular.com/food-api (Konto anlegen → „API Key", keine '
+            'Kreditkarte nötig). Wird nur hier auf dem Gerät gespeichert, und '
+            'die Fotos bleiben dann offline verfügbar.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _spoonCtrl,
+                  obscureText: true,
+                  enableSuggestions: false,
+                  autocorrect: false,
+                  decoration: const InputDecoration(
+                    hintText: 'Spoonacular-Schlüssel',
+                    isDense: true,
+                  ),
+                  onSubmitted: (_) => _saveSpoonKey(app),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton.filledTonal(
+                onPressed: _loadingPhotos ? null : () => _saveSpoonKey(app),
+                icon: const Icon(Icons.save),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (_loadingPhotos)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                LinearProgressIndicator(
+                  value: _photoTotal == 0 ? null : _photoDone / _photoTotal,
+                ),
+                const SizedBox(height: 6),
+                Text('Lade Fotos … $_photoDone / $_photoTotal',
+                    style: Theme.of(context).textTheme.bodySmall),
+              ],
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => _loadPhotos(app),
+                    icon: const Icon(Icons.photo_library_outlined),
+                    label: const Text('Fotos laden'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton(
+                  onPressed: () => _loadPhotos(app, overwrite: true),
+                  child: const Text('Alle neu'),
+                ),
+              ],
+            ),
+          if (app.household.hasSpoonacularKey && !_loadingPhotos)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                '✓ Schlüssel gespeichert · '
+                '${app.recipes.where((r) => r.imageUrl.isNotEmpty).length}'
+                '/${app.recipes.length} Rezepte mit Foto',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+              ),
+            ),
 
           _title('Rezepte'),
           ListTile(
