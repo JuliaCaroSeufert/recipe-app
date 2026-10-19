@@ -36,6 +36,7 @@ jobs:
 
       - name: Fotos abrufen
         env:
+          PEXELS_KEY: ${{ secrets.PEXELS }}
           SPOONACULAR_KEY: ${{ secrets.SPOONACULAR }}
         run: dart run tool/fetch_photos.dart
 
