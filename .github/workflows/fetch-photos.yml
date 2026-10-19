@@ -1,0 +1,46 @@
+name: Rezept-Fotos holen
+
+# Holt einmalig (server-seitig, ohne Browser-CORS) echte Spoonacular-Foto-URLs
+# fuer alle Seed-Rezepte und committet sie nach lib/data/seed_photos.dart.
+# Manuell starten: Actions -> "Rezept-Fotos holen" -> Run workflow.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+        with:
+          ref: claude/gallant-bohr-s6ur6z
+
+      - name: Flutter einrichten
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+
+      - name: Pakete holen
+        run: flutter pub get
+
+      - name: Fotos abrufen
+        env:
+          SPOONACULAR_KEY: ${{ secrets.SPOONACULAR }}
+        run: dart run tool/fetch_photos.dart
+
+      - name: Ergebnis committen
+        run: |
+          if git diff --quiet -- lib/data/seed_photos.dart; then
+            echo "Keine Aenderung an seed_photos.dart"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add lib/data/seed_photos.dart
+          git commit -m "Fetch Spoonacular seed photos (auto)"
+          git push origin HEAD:claude/gallant-bohr-s6ur6z

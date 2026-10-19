@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../data/repository.dart';
+import '../data/seed_photos.dart';
 import '../logic/nutrition_calc.dart';
 import '../logic/plan_generator.dart';
 import '../logic/shopping_list.dart';
@@ -47,6 +48,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> load() async {
     _recipes = await _repo.loadRecipes();
+    await _applyBakedSeedPhotos();
     _plans = await _repo.loadPlans();
     _household = await _repo.loadHousehold();
     _currentPlanId = await _repo.loadCurrentPlanId();
@@ -103,6 +105,20 @@ class AppState extends ChangeNotifier {
     notifyListeners();
     _photosEnsured = false;
     ensurePhotos();
+  }
+
+  /// Applies baked-in Spoonacular photos ([kSeedPhotos]) to already-stored
+  /// recipes that don't have a photo yet, so existing installs pick them up on
+  /// the next launch (no network). New installs get them via the seed itself.
+  Future<void> _applyBakedSeedPhotos() async {
+    for (var i = 0; i < _recipes.length; i++) {
+      final r = _recipes[i];
+      final baked = kSeedPhotos[r.id];
+      if (baked != null && baked.isNotEmpty && r.imageUrl.isEmpty) {
+        _recipes[i] = r.copyWith(imageUrl: baked);
+        await _repo.saveRecipe(_recipes[i]);
+      }
+    }
   }
 
   bool _photosEnsured = false;
