@@ -47,24 +47,24 @@ const Map<String, String> spoonacularQueryOverrides = {
   'seed-linsen-dal': 'red lentil dal',
   'seed-kichererbsen-curry': 'chickpea curry',
   'seed-haehnchen-bowl': 'chicken rice bowl',
-  'seed-ofengemuese-feta': 'roasted vegetables feta',
+  'seed-ofengemuese-feta': 'roasted vegetables',
   'seed-lachs-suesskartoffel': 'salmon sweet potato',
   'seed-pasta-spinat-ricotta': 'spinach ricotta pasta',
-  'seed-chili-sin-carne': 'vegetarian chili beans',
+  'seed-chili-sin-carne': 'chili con carne',
   'seed-shakshuka': 'shakshuka',
-  'seed-asia-nudeln-tofu': 'tofu noodle stir fry',
+  'seed-asia-nudeln-tofu': 'tofu stir fry',
   'seed-kuerbissuppe': 'pumpkin soup',
   'seed-rindergeschnetzeltes': 'beef stroganoff',
   'seed-couscous-salat': 'couscous salad',
-  'seed-gemuesepfanne-halloumi': 'halloumi vegetables',
+  'seed-gemuesepfanne-halloumi': 'halloumi',
   'seed-haehnchen-ofen-gemuese': 'sheet pan chicken vegetables',
   'seed-bowl-falafel': 'falafel bowl',
-  'seed-spaghetti-bolognese-linsen': 'lentil bolognese spaghetti',
+  'seed-spaghetti-bolognese-linsen': 'spaghetti bolognese',
   'seed-gefuellte-suesskartoffel': 'stuffed sweet potato',
   'seed-omelett-gemuese': 'vegetable omelette',
   'seed-minestrone': 'minestrone soup',
-  'seed-pute-wok-gruene-bohnen': 'turkey stir fry green beans',
-  'seed-ofen-feta-pasta': 'baked feta pasta',
+  'seed-pute-wok-gruene-bohnen': 'turkey stir fry',
+  'seed-ofen-feta-pasta': 'feta pasta',
   'seed-rote-bete-salat': 'beetroot salad',
   'seed-gnocchi-mangold': 'gnocchi spinach',
 };
@@ -124,21 +124,32 @@ Future<String?> fetchSpoonacularImage(
   if (apiKey.trim().isEmpty) {
     throw SpoonacularException('Kein Spoonacular-Schlüssel hinterlegt.');
   }
+  final http.Client c = client ?? http.Client();
+  try {
+    // First sorted by popularity (nicest photo); if that returns nothing,
+    // retry unsorted, which matches more niche dishes.
+    final sorted = await _searchImage(query, apiKey.trim(), c, sort: true);
+    if (sorted != null) return sorted;
+    return await _searchImage(query, apiKey.trim(), c, sort: false);
+  } finally {
+    if (client == null) c.close();
+  }
+}
+
+Future<String?> _searchImage(
+    String query, String apiKey, http.Client c, {required bool sort}) async {
   final uri = Uri.https('api.spoonacular.com', '/recipes/complexSearch', {
     'query': query,
     'number': '1',
-    'sort': 'popularity',
-    'apiKey': apiKey.trim(),
+    if (sort) 'sort': 'popularity',
+    'apiKey': apiKey,
   });
 
-  final http.Client c = client ?? http.Client();
   http.Response res;
   try {
     res = await _getWithWebFallback(uri, c);
   } catch (e) {
     throw SpoonacularException('Netzwerkfehler: $e');
-  } finally {
-    if (client == null) c.close();
   }
 
   if (res.statusCode == 401) {
@@ -150,8 +161,7 @@ Future<String?> fetchSpoonacularImage(
         'Spoonacular-Tageslimit erreicht. Morgen weiter laden.');
   }
   if (res.statusCode != 200) {
-    throw SpoonacularException(
-        'Spoonacular-Fehler (Code ${res.statusCode}).');
+    throw SpoonacularException('Spoonacular-Fehler (Code ${res.statusCode}).');
   }
   try {
     final json = jsonDecode(res.body) as Map<String, dynamic>;
