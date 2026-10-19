@@ -192,10 +192,10 @@ TextTheme _textTheme(Color onSurface) {
         color: onSurface,
       );
   return TextTheme(
-    displaySmall: d(32, FontWeight.w700, h: 1.1),
-    headlineMedium: d(27, FontWeight.w700, h: 1.15),
-    headlineSmall: d(23, FontWeight.w600, h: 1.15),
-    titleLarge: d(21, FontWeight.w600, h: 1.2),
+    displaySmall: d(32, FontWeight.w800, h: 1.08),
+    headlineMedium: d(28, FontWeight.w800, h: 1.1),
+    headlineSmall: d(23, FontWeight.w700, h: 1.15),
+    titleLarge: d(21, FontWeight.w700, h: 1.2),
     titleMedium: p(17, FontWeight.w600),
     titleSmall: p(15, FontWeight.w600),
     bodyLarge: p(16, FontWeight.w400, h: 1.4),

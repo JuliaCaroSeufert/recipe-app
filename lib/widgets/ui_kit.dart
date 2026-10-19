@@ -41,6 +41,49 @@ class Pill extends StatelessWidget {
   }
 }
 
+/// Soft pastel tag pill (Protein, Vegan, Schnell …) in the style of modern
+/// recipe apps — a light tinted background with matching dark text, fully
+/// rounded. The colour is picked deterministically from the label so the same
+/// tag always looks the same and a row of tags is pleasantly multi-coloured.
+class TagPill extends StatelessWidget {
+  final String label;
+  const TagPill(this.label, {super.key});
+
+  // (background, text) pastel pairs.
+  static const List<(Color, Color)> _pairs = [
+    (Color(0xFFEDEBFF), Color(0xFF5B4BD6)), // lavender
+    (Color(0xFFDBF3EC), Color(0xFF0E9384)), // mint
+    (Color(0xFFE5EDFF), Color(0xFF3B5BDB)), // blue
+    (Color(0xFFFCE3F0), Color(0xFFC03B86)), // pink
+    (Color(0xFFFFEAD6), Color(0xFFC2560F)), // peach
+    (Color(0xFFE9F3D4), Color(0xFF59820F)), // pistachio
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    var h = 0;
+    for (final c in label.codeUnits) {
+      h = (h * 31 + c) & 0x7fffffff;
+    }
+    final (bg, fg) = _pairs[h % _pairs.length];
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: dark ? bg.withValues(alpha: 0.18) : bg,
+        borderRadius: BorderRadius.circular(40),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: dark ? bg : fg,
+              fontWeight: FontWeight.w600,
+            ),
+      ),
+    );
+  }
+}
+
 /// A rounded, colour-tinted square holding a big emoji — our stand-in for food
 /// photography. Lively and consistent.
 class EmojiTile extends StatelessWidget {
