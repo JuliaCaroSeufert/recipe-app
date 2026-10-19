@@ -32,7 +32,7 @@ jobs:
         run: flutter pub get
 
       - name: APK bauen (Release, mit Debug-Signatur zum Ausprobieren)
-        run: flutter build apk --release --dart-define=SPOONACULAR_KEY=${{ secrets.SPOONACULAR_KEY }}
+        run: flutter build apk --release --dart-define=SPOONACULAR_KEY=${{ secrets.SPOONACULAR }}
 
       - name: APK hochladen
         uses: actions/upload-artifact@v4

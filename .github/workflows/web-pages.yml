@@ -30,7 +30,7 @@ jobs:
         run: flutter pub get
 
       - name: Web bauen
-        run: flutter build web --release --base-href /recipe-app/ --dart-define=SPOONACULAR_KEY=${{ secrets.SPOONACULAR_KEY }}
+        run: flutter build web --release --base-href /recipe-app/ --dart-define=SPOONACULAR_KEY=${{ secrets.SPOONACULAR }}
 
       - name: Auf GitHub Pages veröffentlichen
         uses: peaceiris/actions-gh-pages@v4
