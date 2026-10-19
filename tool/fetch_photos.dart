@@ -8,7 +8,11 @@ import 'package:essensplan/data/seed_recipes.dart';
 import 'package:essensplan/logic/spoonacular.dart';
 
 Future<void> main() async {
-  final key = Platform.environment['SPOONACULAR_KEY']?.trim() ?? '';
+  final raw = Platform.environment['SPOONACULAR_KEY'] ?? '';
+  final key = raw.trim();
+  // Safe diagnostics (no key value printed; a real Spoonacular key is 32 chars).
+  stderr.writeln('SPOONACULAR_KEY raw length=${raw.length}, '
+      'trimmed length=${key.length}');
   if (key.isEmpty) {
     stderr.writeln('SPOONACULAR_KEY not set');
     exit(1);
