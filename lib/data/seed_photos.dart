@@ -3,19 +3,7 @@
 // (server-side, no CORS) so the photos load everywhere without a runtime API
 // call. Re-run the "Rezept-Fotos holen" workflow to refresh.
 const Map<String, String> kSeedPhotos = {
-  'seed-bowl-falafel': 'https://img.spoonacular.com/recipes/642546-636x393.jpg',
-  'seed-couscous-salat': 'https://img.spoonacular.com/recipes/635126-636x393.jpg',
-  'seed-gefuellte-suesskartoffel': 'https://img.spoonacular.com/recipes/1044252-636x393.jpg',
-  'seed-gnocchi-mangold': 'https://img.spoonacular.com/recipes/644917-636x393.jpg',
   'seed-haehnchen-bowl': 'https://img.spoonacular.com/recipes/1096017-636x393.jpg',
-  'seed-haehnchen-ofen-gemuese': 'https://img.spoonacular.com/recipes/1096161-636x393.jpg',
   'seed-kichererbsen-curry': 'https://img.spoonacular.com/recipes/638496-636x393.jpg',
-  'seed-kuerbissuppe': 'https://img.spoonacular.com/recipes/647501-636x393.jpg',
-  'seed-lachs-suesskartoffel': 'https://img.spoonacular.com/recipes/1095872-636x393.jpg',
   'seed-linsen-dal': 'https://img.spoonacular.com/recipes/715415-636x393.jpg',
-  'seed-minestrone': 'https://img.spoonacular.com/recipes/658024-636x393.jpg',
-  'seed-omelett-gemuese': 'https://img.spoonacular.com/recipes/650239-636x393.jpg',
-  'seed-pasta-spinat-ricotta': 'https://img.spoonacular.com/recipes/637671-636x393.jpg',
-  'seed-rindergeschnetzeltes': 'https://img.spoonacular.com/recipes/634699-636x393.jpg',
-  'seed-rote-bete-salat': 'https://img.spoonacular.com/recipes/664960-636x393.jpg',
 };
