@@ -4,6 +4,8 @@ name: Rezept-Fotos holen
 # fuer alle Seed-Rezepte und committet sie nach lib/data/seed_photos.dart.
 # Manuell starten: Actions -> "Rezept-Fotos holen" -> Run workflow.
 on:
+  push:
+    branches: ['claude/gallant-bohr-s6ur6z']
   workflow_dispatch:
 
 permissions:
@@ -11,6 +13,10 @@ permissions:
 
 jobs:
   fetch:
+    # Only run on manual dispatch or a push whose commit message opts in with
+    # the [fetch-photos] marker — so it doesn't re-fetch on every push (and the
+    # auto-commit below, which lacks the marker, doesn't loop).
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[fetch-photos]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Code auschecken
