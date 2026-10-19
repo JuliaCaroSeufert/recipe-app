@@ -3,4 +3,13 @@
 // (server-side, no CORS) so the photos load everywhere without a runtime API
 // call. Re-run the "Rezept-Fotos holen" workflow to refresh.
 const Map<String, String> kSeedPhotos = {
+  'seed-couscous-salat': 'https://img.spoonacular.com/recipes/652423-636x393.jpg',
+  'seed-gefuellte-suesskartoffel': 'https://img.spoonacular.com/recipes/715544-636x393.jpg',
+  'seed-haehnchen-bowl': 'https://img.spoonacular.com/recipes/715420-636x393.jpg',
+  'seed-kichererbsen-curry': 'https://img.spoonacular.com/recipes/641072-636x393.jpg',
+  'seed-lachs-suesskartoffel': 'https://img.spoonacular.com/recipes/1095872-636x393.jpg',
+  'seed-minestrone': 'https://img.spoonacular.com/recipes/658024-636x393.jpg',
+  'seed-ofen-feta-pasta': 'https://img.spoonacular.com/recipes/659907-636x393.jpg',
+  'seed-omelett-gemuese': 'https://img.spoonacular.com/recipes/665734-636x393.jpg',
+  'seed-pasta-spinat-ricotta': 'https://img.spoonacular.com/recipes/637671-636x393.jpg',
 };
