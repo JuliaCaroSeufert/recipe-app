@@ -21,10 +21,10 @@ Future<void> main() async {
   final photos = <String, String>{};
   for (final r in seedRecipes) {
     try {
-      final url = await fetchSpoonacularImage(spoonacularQuery(r), apiKey: key);
+      final url = await fetchSpoonacularImage(queryForRecipe(r), apiKey: key);
       if (url != null && url.isNotEmpty) {
         photos[r.id] = url;
-        stderr.writeln('OK   ${r.id}  <-  "${spoonacularQuery(r)}"  ->  $url');
+        stderr.writeln('OK   ${r.id}  <-  "${queryForRecipe(r)}"  ->  $url');
       } else {
         stderr.writeln('MISS ${r.id}  (no result)');
       }

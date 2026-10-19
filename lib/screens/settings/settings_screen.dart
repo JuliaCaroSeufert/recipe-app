@@ -80,7 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String? errorMessage;
     for (final r in todo) {
       try {
-        final url = await fetchSpoonacularImage(spoonacularQuery(r), apiKey: key);
+        final url = await fetchSpoonacularImage(queryForRecipe(r), apiKey: key);
         if (url != null) {
           await app.saveRecipe(r.copyWith(imageUrl: url));
           updated++;

@@ -40,6 +40,40 @@ class SpoonacularException implements Exception {
   String toString() => message;
 }
 
+/// Hand-tuned English search queries for the built-in seed recipes, so each
+/// one matches a good Spoonacular photo (the auto keyword extraction otherwise
+/// leaves German words in that return no result).
+const Map<String, String> spoonacularQueryOverrides = {
+  'seed-linsen-dal': 'red lentil dal',
+  'seed-kichererbsen-curry': 'chickpea curry',
+  'seed-haehnchen-bowl': 'chicken rice bowl',
+  'seed-ofengemuese-feta': 'roasted vegetables feta',
+  'seed-lachs-suesskartoffel': 'salmon sweet potato',
+  'seed-pasta-spinat-ricotta': 'spinach ricotta pasta',
+  'seed-chili-sin-carne': 'vegetarian chili beans',
+  'seed-shakshuka': 'shakshuka',
+  'seed-asia-nudeln-tofu': 'tofu noodle stir fry',
+  'seed-kuerbissuppe': 'pumpkin soup',
+  'seed-rindergeschnetzeltes': 'beef stroganoff',
+  'seed-couscous-salat': 'couscous salad',
+  'seed-gemuesepfanne-halloumi': 'halloumi vegetables',
+  'seed-haehnchen-ofen-gemuese': 'sheet pan chicken vegetables',
+  'seed-bowl-falafel': 'falafel bowl',
+  'seed-spaghetti-bolognese-linsen': 'lentil bolognese spaghetti',
+  'seed-gefuellte-suesskartoffel': 'stuffed sweet potato',
+  'seed-omelett-gemuese': 'vegetable omelette',
+  'seed-minestrone': 'minestrone soup',
+  'seed-pute-wok-gruene-bohnen': 'turkey stir fry green beans',
+  'seed-ofen-feta-pasta': 'baked feta pasta',
+  'seed-rote-bete-salat': 'beetroot salad',
+  'seed-gnocchi-mangold': 'gnocchi spinach',
+};
+
+/// The search query to use for a recipe: a hand-tuned override when available
+/// (seed recipes), otherwise derived from its keywords.
+String queryForRecipe(Recipe r) =>
+    spoonacularQueryOverrides[r.id] ?? spoonacularQuery(r);
+
 /// Short English search query for a recipe, from its photo keywords (which
 /// already map common German food words to English). Falls back to the title.
 String spoonacularQuery(Recipe r) {

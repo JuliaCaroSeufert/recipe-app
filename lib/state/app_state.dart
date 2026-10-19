@@ -136,7 +136,7 @@ class AppState extends ChangeNotifier {
     for (final r in todo) {
       try {
         final url =
-            await fetchSpoonacularImage(spoonacularQuery(r), apiKey: key);
+            await fetchSpoonacularImage(queryForRecipe(r), apiKey: key);
         if (url != null) {
           final current = recipeById(r.id);
           if (current != null && current.imageUrl.isEmpty) {
