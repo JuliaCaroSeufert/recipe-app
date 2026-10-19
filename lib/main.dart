@@ -16,6 +16,9 @@ Future<void> main() async {
 
   final appState = AppState(Repository());
   await appState.load();
+  // Fill in any missing recipe photos in the background (real Spoonacular
+  // pictures); the UI updates as they arrive.
+  appState.ensurePhotos();
 
   runApp(
     ChangeNotifierProvider.value(
@@ -44,9 +47,42 @@ class EssensplanApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      builder: (context, child) => _PhoneFrame(child: child!),
       home: Consumer<AppState>(
         builder: (_, app, _) =>
             app.household.onboarded ? const HomeShell() : const OnboardingScreen(),
+      ),
+    );
+  }
+}
+
+/// Keeps the app at a comfortable phone width and centers it on wide screens
+/// (web / tablet / desktop), so the layout and proportions stay phone-like —
+/// like the reference cooking apps — instead of stretching across the page.
+class _PhoneFrame extends StatelessWidget {
+  final Widget child;
+  const _PhoneFrame({required this.child});
+
+  static const double _maxWidth = 460;
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    if (mq.size.width <= _maxWidth + 24) return child;
+    final scheme = Theme.of(context).colorScheme;
+    return ColoredBox(
+      color: scheme.surfaceContainerHighest,
+      child: Center(
+        child: ClipRect(
+          child: SizedBox(
+            width: _maxWidth,
+            height: mq.size.height,
+            child: MediaQuery(
+              data: mq.copyWith(size: Size(_maxWidth, mq.size.height)),
+              child: child,
+            ),
+          ),
+        ),
       ),
     );
   }

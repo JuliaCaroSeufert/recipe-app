@@ -4,6 +4,7 @@ import '../data/repository.dart';
 import '../logic/nutrition_calc.dart';
 import '../logic/plan_generator.dart';
 import '../logic/shopping_list.dart';
+import '../logic/spoonacular.dart';
 import '../models/household.dart';
 import '../models/recipe.dart';
 import '../models/week_plan.dart';
@@ -100,6 +101,36 @@ class AppState extends ChangeNotifier {
     await _repo.restoreSeedRecipes();
     _recipes = await _repo.loadRecipes();
     notifyListeners();
+    _photosEnsured = false;
+    ensurePhotos();
+  }
+
+  bool _photosEnsured = false;
+
+  /// Fire-and-forget: fetch a real photo for every recipe still missing one,
+  /// using the effective Spoonacular key. Runs once per session; stops quietly
+  /// on the first network/quota error (the user can retry in Settings). UI
+  /// updates as photos arrive via [saveRecipe]'s notify.
+  Future<void> ensurePhotos() async {
+    if (_photosEnsured) return;
+    _photosEnsured = true;
+    final key = effectiveSpoonacularKey(_household);
+    if (key.isEmpty) return;
+    final todo = _recipes.where((r) => r.imageUrl.isEmpty).toList();
+    for (final r in todo) {
+      try {
+        final url =
+            await fetchSpoonacularImage(spoonacularQuery(r), apiKey: key);
+        if (url != null) {
+          final current = recipeById(r.id);
+          if (current != null && current.imageUrl.isEmpty) {
+            await saveRecipe(current.copyWith(imageUrl: url));
+          }
+        }
+      } catch (_) {
+        break; // network / quota / CORS — give up quietly for this session.
+      }
+    }
   }
 
 

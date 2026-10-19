@@ -2,7 +2,26 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../models/household.dart';
 import '../models/recipe.dart';
+
+/// Optional build-time Spoonacular key, injected via
+/// `--dart-define=SPOONACULAR_KEY=...` (never committed in source). Lets the
+/// deployed build ship with photos working out of the box; a user-entered key
+/// in Settings still overrides it. Empty when not provided at build time.
+const String kBuildSpoonacularKey =
+    String.fromEnvironment('SPOONACULAR_KEY');
+
+/// The key to use: the household's own key when set, otherwise the build key.
+String effectiveSpoonacularKey(Household h) {
+  final own = h.spoonacularApiKey.trim();
+  return own.isNotEmpty ? own : kBuildSpoonacularKey.trim();
+}
+
+/// True when running on the web (pure-Dart check, no Flutter import). On the
+/// web the Spoonacular API may be blocked by CORS, so we fall back to a proxy.
+const bool _isWeb = identical(0, 0.0);
+const String _corsProxy = 'https://api.allorigins.win/raw?url=';
 
 /// Spoonacular photo integration.
 ///
@@ -81,7 +100,7 @@ Future<String?> fetchSpoonacularImage(
   final http.Client c = client ?? http.Client();
   http.Response res;
   try {
-    res = await c.get(uri).timeout(const Duration(seconds: 20));
+    res = await _getWithWebFallback(uri, c);
   } catch (e) {
     throw SpoonacularException('Netzwerkfehler: $e');
   } finally {
@@ -105,5 +124,19 @@ Future<String?> fetchSpoonacularImage(
     return parseSpoonacularImage(json);
   } catch (e) {
     throw SpoonacularException('Antwort nicht lesbar: $e');
+  }
+}
+
+/// GETs [uri]. On the web, a direct call can be blocked by CORS (which surfaces
+/// as a thrown "Failed to fetch"), so we retry once through a public CORS
+/// proxy. On native platforms there is no CORS, so we only call directly.
+Future<http.Response> _getWithWebFallback(Uri uri, http.Client c) async {
+  try {
+    return await c.get(uri).timeout(const Duration(seconds: 20));
+  } catch (e) {
+    if (!_isWeb) rethrow;
+    final proxied =
+        Uri.parse('$_corsProxy${Uri.encodeComponent(uri.toString())}');
+    return c.get(proxied).timeout(const Duration(seconds: 30));
   }
 }

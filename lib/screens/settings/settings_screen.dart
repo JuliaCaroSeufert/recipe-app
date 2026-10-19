@@ -16,7 +16,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late final TextEditingController _geminiCtrl =
       TextEditingController(text: context.read<AppState>().household.geminiApiKey);
   late final TextEditingController _spoonCtrl = TextEditingController(
-      text: context.read<AppState>().household.spoonacularApiKey);
+      text: effectiveSpoonacularKey(context.read<AppState>().household));
 
   bool _loadingPhotos = false;
   int _photoDone = 0;
@@ -301,11 +301,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
-          if (app.household.hasSpoonacularKey && !_loadingPhotos)
+          if (!_loadingPhotos)
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(
-                '✓ Schlüssel gespeichert · '
+                '✓ Fotos aktiv · '
                 '${app.recipes.where((r) => r.imageUrl.isNotEmpty).length}'
                 '/${app.recipes.length} Rezepte mit Foto',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(

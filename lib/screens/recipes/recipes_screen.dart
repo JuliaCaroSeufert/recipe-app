@@ -176,8 +176,8 @@ class _RecipeListViewState extends State<RecipeListView> {
               : GridView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
                   gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
+                      const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 220,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
                     childAspectRatio: 0.66,
