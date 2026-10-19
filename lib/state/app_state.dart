@@ -102,19 +102,18 @@ class AppState extends ChangeNotifier {
   Future<void> restoreSeedRecipes() async {
     await _repo.restoreSeedRecipes();
     _recipes = await _repo.loadRecipes();
+    await _applyBakedSeedPhotos();
     notifyListeners();
-    _photosEnsured = false;
-    ensurePhotos();
   }
 
-  /// Applies baked-in Spoonacular photos ([kSeedPhotos]) to already-stored
-  /// recipes that don't have a photo yet, so existing installs pick them up on
-  /// the next launch (no network). New installs get them via the seed itself.
+  /// Applies the baked-in seed photos ([kSeedPhotos]) to already-stored seed
+  /// recipes, overriding an outdated URL so existing installs pick up the
+  /// current photo source on the next launch (no network).
   Future<void> _applyBakedSeedPhotos() async {
     for (var i = 0; i < _recipes.length; i++) {
       final r = _recipes[i];
       final baked = kSeedPhotos[r.id];
-      if (baked != null && baked.isNotEmpty && r.imageUrl.isEmpty) {
+      if (baked != null && baked.isNotEmpty && r.imageUrl != baked) {
         _recipes[i] = r.copyWith(imageUrl: baked);
         await _repo.saveRecipe(_recipes[i]);
       }

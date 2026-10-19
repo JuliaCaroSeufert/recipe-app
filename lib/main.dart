@@ -16,9 +16,6 @@ Future<void> main() async {
 
   final appState = AppState(Repository());
   await appState.load();
-  // Fill in any missing recipe photos in the background (real Spoonacular
-  // pictures); the UI updates as they arrive.
-  appState.ensurePhotos();
 
   runApp(
     ChangeNotifierProvider.value(

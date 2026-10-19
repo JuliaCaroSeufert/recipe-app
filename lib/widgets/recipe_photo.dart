@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../logic/ai_photo.dart';
 import '../models/recipe.dart';
 import '../theme.dart';
 import 'net_image.dart';
@@ -26,18 +27,10 @@ class RecipePhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (recipe.imageUrl.isEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(radius),
-        child: SizedBox(
-          width: width,
-          height: height,
-          child: _placeholder(context),
-        ),
-      );
-    }
+    // Baked/imported photo if present, otherwise a deterministic AI photo.
+    final url = recipe.imageUrl.isNotEmpty ? recipe.imageUrl : aiPhotoUrl(recipe);
     return netImage(
-      recipe.imageUrl,
+      url,
       width: width,
       height: height,
       radius: radius,
