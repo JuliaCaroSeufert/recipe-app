@@ -2,10 +2,10 @@ import 'package:flutter/foundation.dart';
 
 import '../data/repository.dart';
 import '../data/seed_photos.dart';
+import '../logic/ai_photo.dart';
 import '../logic/nutrition_calc.dart';
 import '../logic/plan_generator.dart';
 import '../logic/shopping_list.dart';
-import '../logic/spoonacular.dart';
 import '../models/household.dart';
 import '../models/recipe.dart';
 import '../models/week_plan.dart';
@@ -83,13 +83,21 @@ class AppState extends ChangeNotifier {
 
   // --- Recipes -----------------------------------------------------------
   Future<void> saveRecipe(Recipe recipe) async {
-    final idx = _recipes.indexWhere((r) => r.id == recipe.id);
-    if (idx >= 0) {
-      _recipes[idx] = recipe;
-    } else {
-      _recipes = [..._recipes, recipe];
+    var r = recipe;
+    // Give any new, non-seed recipe (import or manual) a styled AI photo if it
+    // has none, so imported recipes look like the built-in ones. It's a single
+    // deterministic image per recipe (generated on first view, then cached) —
+    // no rate-limit issue the way loading many at once would be.
+    if (r.imageUrl.isEmpty && r.source != RecipeSource.seed) {
+      r = r.copyWith(imageUrl: aiPhotoUrl(r));
     }
-    await _repo.saveRecipe(recipe);
+    final idx = _recipes.indexWhere((e) => e.id == r.id);
+    if (idx >= 0) {
+      _recipes[idx] = r;
+    } else {
+      _recipes = [..._recipes, r];
+    }
+    await _repo.saveRecipe(r);
     notifyListeners();
   }
 
@@ -121,35 +129,6 @@ class AppState extends ChangeNotifier {
       }
     }
   }
-
-  bool _photosEnsured = false;
-
-  /// Fire-and-forget: fetch a real photo for every recipe still missing one,
-  /// using the effective Spoonacular key. Runs once per session; stops quietly
-  /// on the first network/quota error (the user can retry in Settings). UI
-  /// updates as photos arrive via [saveRecipe]'s notify.
-  Future<void> ensurePhotos() async {
-    if (_photosEnsured) return;
-    _photosEnsured = true;
-    final key = effectiveSpoonacularKey(_household);
-    if (key.isEmpty) return;
-    final todo = _recipes.where((r) => r.imageUrl.isEmpty).toList();
-    for (final r in todo) {
-      try {
-        final url =
-            await fetchSpoonacularImage(queryForRecipe(r), apiKey: key);
-        if (url != null) {
-          final current = recipeById(r.id);
-          if (current != null && current.imageUrl.isEmpty) {
-            await saveRecipe(current.copyWith(imageUrl: url));
-          }
-        }
-      } catch (_) {
-        break; // network / quota / CORS — give up quietly for this session.
-      }
-    }
-  }
-
 
   // --- Plans -------------------------------------------------------------
   Future<void> _upsertPlan(WeekPlan plan, {bool makeCurrent = false}) async {
