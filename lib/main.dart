@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
+import 'data/photo_store.dart';
 import 'data/repository.dart';
 import 'screens/home_shell.dart';
 import 'screens/onboarding/onboarding_screen.dart';
@@ -14,6 +15,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('de_DE');
 
+  await PhotoStore.init();
   final appState = AppState(Repository());
   await appState.load();
 

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../data/photo_store.dart';
 import '../models/recipe.dart';
 import '../theme.dart';
 import 'net_image.dart';
 
-/// Shows a food photo for the recipe from its [Recipe.imageUrl] (filled by the
-/// Spoonacular photo loader in Settings, or an import). Rendered via [netImage]
-/// so it also shows in the browser (web `<img>` path, no CORS). When no photo
+/// Shows a food photo for the recipe. Seed recipes use a bundled asset; other
+/// recipes (imports) use their photo URL, cached to device bytes after the
+/// first load (via [PhotoStore]) so it then loads offline. When no photo
 /// is set yet it falls back to a tasteful gradient + emoji tile.
 class RecipePhoto extends StatelessWidget {
   final Recipe recipe;
@@ -44,8 +45,29 @@ class RecipePhoto extends StatelessWidget {
         ),
       );
     }
-    // Imported recipes may carry a real network photo.
+    // Imported recipes carry a photo URL. Prefer bytes already saved on the
+    // device (offline, instant); otherwise show the network image and save it
+    // for next time.
     if (url.isNotEmpty) {
+      final cached = PhotoStore.bytes(recipe.id);
+      if (cached != null) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: Image.memory(
+              cached,
+              width: width,
+              height: height,
+              fit: BoxFit.cover,
+              gaplessPlayback: true,
+              errorBuilder: (_, _, _) => _placeholder(context),
+            ),
+          ),
+        );
+      }
+      PhotoStore.cacheFromUrl(recipe.id, url);
       return netImage(
         url,
         width: width,
