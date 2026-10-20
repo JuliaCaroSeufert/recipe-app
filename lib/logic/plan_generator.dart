@@ -85,13 +85,22 @@ List<Recipe> filterForHousehold(Iterable<Recipe> recipes, Household h) {
   }).toList();
 }
 
+/// How often a favourite should resurface at the latest (weeks). A favourite
+/// not planned within this window gets a guaranteeing boost so it comes back.
+const int kFavoriteIntervalWeeks = 6;
+
 /// Builds a weekly plan that favours vegetable variety and fills common
 /// nutrient gaps, while honouring batch-cook and order/eat-out choices.
+///
+/// [history] maps a recipe id to the start date it was last planned (derived
+/// from past weeks). Favourites are surfaced more often, and a favourite that
+/// hasn't appeared for [kFavoriteIntervalWeeks] weeks is strongly prioritised.
 WeekPlan generateWeekPlan(
   GenerateConfig config,
   List<Recipe> library,
-  Household household,
-) {
+  Household household, {
+  Map<String, DateTime> history = const {},
+}) {
   final rng = Random(config.seed ?? DateTime.now().millisecondsSinceEpoch);
   final persons = household.persons;
 
@@ -146,12 +155,22 @@ WeekPlan generateWeekPlan(
 
   bool suits(Recipe r, MealType m) => r.suitableFor.contains(m);
 
+  // Favourite boost, escalating with how long since the recipe was last
+  // planned — overdue favourites (>= interval) become almost guaranteed.
+  double favBonus(Recipe r) {
+    if (!r.isFavorite) return 0;
+    final last = history[r.id];
+    final weeks =
+        last == null ? 999.0 : base.difference(last).inDays / 7.0;
+    if (weeks >= kFavoriteIntervalWeeks) return 62.5;
+    return 2.5 + 4.0 * (weeks / kFavoriteIntervalWeeks);
+  }
+
   // --- 1) Batch-cook sessions -------------------------------------------
   final batchPool = candidates.where((r) => r.batchFriendly).toList()
     ..shuffle(rng)
-    // Favourites first, so a favourite batch dish is preferred.
-    ..sort((a, b) =>
-        (b.isFavorite ? 1 : 0).compareTo(a.isFavorite ? 1 : 0));
+    // Overdue favourites first, then favourites, then the rest.
+    ..sort((a, b) => favBonus(b).compareTo(favBonus(a)));
   var sessionsMade = 0;
   for (final recipe in batchPool) {
     if (sessionsMade >= config.batchSessions) break;
@@ -214,6 +233,7 @@ WeekPlan generateWeekPlan(
         weeklyTarget: weeklyTarget,
         persons: persons,
         alreadyUsed: used.contains(r.id),
+        favoriteBonus: favBonus(r),
         jitter: rng.nextDouble() * 0.5,
       );
       if (score > bestScore) {
@@ -245,6 +265,7 @@ double _score(
   required Map<String, double> weeklyTarget,
   required int persons,
   required bool alreadyUsed,
+  required double favoriteBonus,
   required double jitter,
 }) {
   // Variety: strongly reward produce we don't have yet.
@@ -265,9 +286,6 @@ double _score(
     nutritionScore += filled / target; // 0..1 per nutrient
   }
   nutritionScore = nutritionScore / _focusNutrients.length * 6.0;
-
-  // Favourites surface noticeably more often in the weekly plan.
-  final favoriteBonus = r.isFavorite ? 2.5 : 0.0;
 
   final repeatPenalty = alreadyUsed ? -100.0 : 0.0;
   return varietyScore + nutritionScore + favoriteBonus + repeatPenalty + jitter;

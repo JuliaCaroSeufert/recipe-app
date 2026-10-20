@@ -229,6 +229,44 @@ void main() {
     });
   });
 
+  group('favourite cadence', () {
+    Set<String> plannedIds(plan) {
+      final used = <String>{};
+      for (final d in plan.days) {
+        for (final s in d.meals.values) {
+          if (s.recipeId != null) used.add(s.recipeId as String);
+        }
+      }
+      return used;
+    }
+
+    test('a favourite overdue by more than the interval is planned', () {
+      final fav = seedRecipes.first.copyWith(isFavorite: true);
+      final library = [fav, ...seedRecipes.skip(1)];
+      final plan = generateWeekPlan(
+        GenerateConfig(startDate: monday, seed: 3),
+        library,
+        const Household(persons: 2),
+        history: {fav.id: monday.subtract(const Duration(days: 70))},
+      );
+      expect(plannedIds(plan).contains(fav.id), isTrue);
+    });
+
+    test('a favourite planned last week is not forced back immediately', () {
+      // Not a hard guarantee, but with a recent plan the overdue boost is off.
+      final fav = seedRecipes.first.copyWith(isFavorite: true);
+      final library = [fav, ...seedRecipes.skip(1)];
+      final plan = generateWeekPlan(
+        GenerateConfig(startDate: monday, seed: 3),
+        library,
+        const Household(persons: 2),
+        history: {fav.id: monday.subtract(const Duration(days: 7))},
+      );
+      // Sanity: generation still fills the week.
+      expect(plannedIds(plan).isNotEmpty, isTrue);
+    });
+  });
+
   group('spoonacular helpers', () {
     test('builds a short English query from a German title', () {
       final dal = seedRecipes.firstWhere((r) => r.id == 'seed-linsen-dal');

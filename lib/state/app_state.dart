@@ -153,8 +153,39 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// When each recipe was last planned, from past weeks (for favourite
+  /// cadence). [excludeStart] skips a week with that start date, so
+  /// regenerating the current week doesn't count against itself.
+  Map<String, DateTime> _planHistory({DateTime? excludeStart}) {
+    final out = <String, DateTime>{};
+    for (final p in _plans) {
+      if (excludeStart != null &&
+          p.startDate.year == excludeStart.year &&
+          p.startDate.month == excludeStart.month &&
+          p.startDate.day == excludeStart.day) {
+        continue;
+      }
+      for (final day in p.days) {
+        for (final slot in day.meals.values) {
+          final id = slot.recipeId;
+          if (id == null) continue;
+          final prev = out[id];
+          if (prev == null || p.startDate.isAfter(prev)) out[id] = p.startDate;
+        }
+      }
+    }
+    return out;
+  }
+
   Future<WeekPlan> generatePlan(GenerateConfig config) async {
-    final plan = generateWeekPlan(config, _recipes, _household);
+    final base = DateTime(
+        config.startDate.year, config.startDate.month, config.startDate.day);
+    final plan = generateWeekPlan(
+      config,
+      _recipes,
+      _household,
+      history: _planHistory(excludeStart: base),
+    );
     await _upsertPlan(plan, makeCurrent: true);
     return plan;
   }
