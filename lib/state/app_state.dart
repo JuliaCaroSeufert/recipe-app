@@ -101,6 +101,12 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> toggleFavorite(String id) async {
+    final r = recipeById(id);
+    if (r == null) return;
+    await saveRecipe(r.copyWith(isFavorite: !r.isFavorite));
+  }
+
   Future<void> deleteRecipe(String id) async {
     _recipes = _recipes.where((r) => r.id != id).toList();
     await _repo.deleteRecipe(id);

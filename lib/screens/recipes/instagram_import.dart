@@ -20,7 +20,15 @@ class InstagramImportScreen extends StatefulWidget {
   /// Text handed in by the share sheet (a caption and/or a reel link).
   final String? sharedText;
 
-  const InstagramImportScreen({super.key, this.sharedText});
+  /// When true, the screen is framed as a generic "paste any recipe text"
+  /// import (e.g. copied from Choosy or a blog) rather than Instagram-specific.
+  final bool generic;
+
+  const InstagramImportScreen({
+    super.key,
+    this.sharedText,
+    this.generic = false,
+  });
 
   @override
   State<InstagramImportScreen> createState() => _InstagramImportScreenState();
@@ -116,8 +124,11 @@ class _InstagramImportScreenState extends State<InstagramImportScreen> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final draft = _draft;
+    final generic = widget.generic;
     return Scaffold(
-      appBar: AppBar(title: const Text('Aus Instagram importieren')),
+      appBar: AppBar(
+          title: Text(
+              generic ? 'Rezept einfügen' : 'Aus Instagram importieren')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -133,17 +144,24 @@ class _InstagramImportScreenState extends State<InstagramImportScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Öffne das Reel/den Post in Instagram, kopiere die '
-                    'Beschreibung und füge sie unten ein. Die App erkennt '
-                    'Zutaten, Mengen und Schritte – prüfe die Vorschau und '
-                    'speichere.',
+                    generic
+                        ? 'Kopiere ein Rezept (z. B. aus Choosy, einem Blog '
+                            'oder einer anderen App) und füge es unten ein. Die '
+                            'App erkennt Zutaten, Mengen und Schritte – prüfe '
+                            'die Vorschau und speichere.'
+                        : 'Öffne das Reel/den Post in Instagram, kopiere die '
+                            'Beschreibung und füge sie unten ein. Die App '
+                            'erkennt Zutaten, Mengen und Schritte – prüfe die '
+                            'Vorschau und speichere.',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
               ],
             ),
           ),
-          if (_caption.text.trim().isEmpty && _url.text.trim().isNotEmpty) ...[
+          if (!generic &&
+              _caption.text.trim().isEmpty &&
+              _url.text.trim().isNotEmpty) ...[
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(14),
@@ -164,18 +182,21 @@ class _InstagramImportScreenState extends State<InstagramImportScreen> {
           TextField(
             controller: _url,
             onChanged: (_) => _reparse(),
-            decoration: const InputDecoration(
-              labelText: 'Instagram-Link (optional)',
-              hintText: 'https://www.instagram.com/reel/...',
-              prefixIcon: Icon(Icons.link),
+            decoration: InputDecoration(
+              labelText: generic ? 'Link (optional)' : 'Instagram-Link (optional)',
+              hintText: generic
+                  ? 'https://…'
+                  : 'https://www.instagram.com/reel/...',
+              prefixIcon: const Icon(Icons.link),
             ),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _caption,
             onChanged: (_) => _reparse(),
-            decoration: const InputDecoration(
-              labelText: 'Caption / Beschreibung einfügen',
+            decoration: InputDecoration(
+              labelText:
+                  generic ? 'Rezept-Text einfügen' : 'Caption / Beschreibung einfügen',
               alignLabelWithHint: true,
             ),
             minLines: 6,

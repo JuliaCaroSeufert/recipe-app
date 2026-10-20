@@ -148,7 +148,10 @@ WeekPlan generateWeekPlan(
 
   // --- 1) Batch-cook sessions -------------------------------------------
   final batchPool = candidates.where((r) => r.batchFriendly).toList()
-    ..shuffle(rng);
+    ..shuffle(rng)
+    // Favourites first, so a favourite batch dish is preferred.
+    ..sort((a, b) =>
+        (b.isFavorite ? 1 : 0).compareTo(a.isFavorite ? 1 : 0));
   var sessionsMade = 0;
   for (final recipe in batchPool) {
     if (sessionsMade >= config.batchSessions) break;
@@ -263,8 +266,11 @@ double _score(
   }
   nutritionScore = nutritionScore / _focusNutrients.length * 6.0;
 
+  // Favourites surface noticeably more often in the weekly plan.
+  final favoriteBonus = r.isFavorite ? 2.5 : 0.0;
+
   final repeatPenalty = alreadyUsed ? -100.0 : 0.0;
-  return varietyScore + nutritionScore + repeatPenalty + jitter;
+  return varietyScore + nutritionScore + favoriteBonus + repeatPenalty + jitter;
 }
 
 WeekPlan _assemble(

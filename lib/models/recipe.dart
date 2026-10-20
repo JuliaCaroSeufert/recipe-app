@@ -38,6 +38,9 @@ class Recipe {
   /// Keeps and reheats well, so the generator may cook it once for several
   /// meals ("batch cooking").
   final bool batchFriendly;
+
+  /// Whether the user marked this recipe as a favourite.
+  final bool isFavorite;
   final List<RecipeIngredient> ingredients;
   final List<String> steps;
   final Nutrition nutritionPerServing;
@@ -58,6 +61,7 @@ class Recipe {
     this.isVegetarian = false,
     this.isVegan = false,
     this.batchFriendly = false,
+    this.isFavorite = false,
     this.ingredients = const [],
     this.steps = const [],
     this.nutritionPerServing = Nutrition.zero,
@@ -150,6 +154,7 @@ class Recipe {
     bool? isVegetarian,
     bool? isVegan,
     bool? batchFriendly,
+    bool? isFavorite,
     List<RecipeIngredient>? ingredients,
     List<String>? steps,
     Nutrition? nutritionPerServing,
@@ -169,6 +174,7 @@ class Recipe {
         isVegetarian: isVegetarian ?? this.isVegetarian,
         isVegan: isVegan ?? this.isVegan,
         batchFriendly: batchFriendly ?? this.batchFriendly,
+        isFavorite: isFavorite ?? this.isFavorite,
         ingredients: ingredients ?? this.ingredients,
         steps: steps ?? this.steps,
         nutritionPerServing: nutritionPerServing ?? this.nutritionPerServing,
@@ -190,6 +196,7 @@ class Recipe {
         'isVegetarian': isVegetarian,
         'isVegan': isVegan,
         'batchFriendly': batchFriendly,
+        'isFavorite': isFavorite,
         'ingredients': ingredients.map((i) => i.toJson()).toList(),
         'steps': steps,
         'nutritionPerServing': nutritionPerServing.toJson(),
@@ -216,6 +223,7 @@ class Recipe {
         isVegetarian: (j['isVegetarian'] as bool?) ?? false,
         isVegan: (j['isVegan'] as bool?) ?? false,
         batchFriendly: (j['batchFriendly'] as bool?) ?? false,
+        isFavorite: (j['isFavorite'] as bool?) ?? false,
         ingredients: ((j['ingredients'] as List?) ?? const [])
             .map((e) => RecipeIngredient.fromJson(e as Map<String, dynamic>))
             .toList(),

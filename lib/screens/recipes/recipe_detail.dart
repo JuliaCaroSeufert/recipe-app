@@ -22,7 +22,6 @@ class RecipeDetailScreen extends StatefulWidget {
 
 class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
   int? _servings;
-  bool _saved = false;
 
   @override
   Widget build(BuildContext context) {
@@ -124,12 +123,12 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                       Expanded(
                         child: _action(
                           context,
-                          icon: _saved
+                          icon: recipe.isFavorite
                               ? Icons.favorite_rounded
                               : Icons.favorite_border_rounded,
-                          label: 'Speichern',
-                          color: _saved ? scheme.tertiary : null,
-                          onTap: () => setState(() => _saved = !_saved),
+                          label: recipe.isFavorite ? 'Favorit' : 'Favorisieren',
+                          color: recipe.isFavorite ? scheme.tertiary : null,
+                          onTap: () => app.toggleFavorite(recipe.id),
                         ),
                       ),
                       Container(

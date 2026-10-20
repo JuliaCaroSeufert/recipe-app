@@ -26,6 +26,12 @@ class RecipesScreen extends StatelessWidget {
               if (value == 'manual') {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const RecipeEditScreen()));
+              } else if (value == 'paste') {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) =>
+                            const InstagramImportScreen(generic: true)));
               } else if (value == 'instagram') {
                 Navigator.push(
                     context,
@@ -39,6 +45,12 @@ class RecipesScreen extends StatelessWidget {
                 child: ListTile(
                     leading: Icon(Icons.edit_note_rounded),
                     title: Text('Eigenes Rezept')),
+              ),
+              PopupMenuItem(
+                value: 'paste',
+                child: ListTile(
+                    leading: Icon(Icons.content_paste_rounded),
+                    title: Text('Rezept einfügen (Text)')),
               ),
               PopupMenuItem(
                 value: 'instagram',
@@ -90,6 +102,7 @@ class _RecipeListViewState extends State<RecipeListView> {
   final Set<String> _filters = {};
 
   static const _chips = {
+    'favoriten': 'Favoriten',
     'schnell': 'Schnell',
     'vegetarisch': 'Vegetarisch',
     'vegan': 'Vegan',
@@ -110,6 +123,8 @@ class _RecipeListViewState extends State<RecipeListView> {
     }
     for (final f in _filters) {
       switch (f) {
+        case 'favoriten':
+          if (!r.isFavorite) return false;
         case 'schnell':
           if (!r.isQuick) return false;
         case 'vegetarisch':
@@ -127,7 +142,11 @@ class _RecipeListViewState extends State<RecipeListView> {
   Widget build(BuildContext context) {
     final app = context.watch<AppState>();
     final recipes = app.recipes.where(_matches).toList()
-      ..sort((a, b) => a.title.compareTo(b.title));
+      // Favourites first, then alphabetical.
+      ..sort((a, b) {
+        if (a.isFavorite != b.isFavorite) return a.isFavorite ? -1 : 1;
+        return a.title.compareTo(b.title);
+      });
 
     return Column(
       children: [
@@ -206,6 +225,35 @@ class _RecipeListViewState extends State<RecipeListView> {
   }
 }
 
+/// Small circular heart button overlaid on a recipe photo to toggle favourite.
+class _HeartButton extends StatelessWidget {
+  final Recipe recipe;
+  const _HeartButton({required this.recipe});
+
+  @override
+  Widget build(BuildContext context) {
+    final fav = recipe.isFavorite;
+    return Material(
+      color: Colors.white.withValues(alpha: 0.92),
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: () => context.read<AppState>().toggleFavorite(recipe.id),
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: Icon(
+            fav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+            size: 18,
+            color: fav
+                ? Theme.of(context).colorScheme.tertiary
+                : Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// A photo-forward tile for the 2-column recipe grid (inspired by modern
 /// cooking apps): big photo on top, title + nutrient dots + quick meta below.
 class RecipeCard extends StatelessWidget {
@@ -223,9 +271,18 @@ class RecipeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AspectRatio(
-            aspectRatio: 1.25,
-            child: RecipePhoto(recipe: recipe, radius: 16, emojiSize: 46),
+          Stack(
+            children: [
+              AspectRatio(
+                aspectRatio: 1.25,
+                child: RecipePhoto(recipe: recipe, radius: 16, emojiSize: 46),
+              ),
+              Positioned(
+                top: 6,
+                right: 6,
+                child: _HeartButton(recipe: recipe),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           Padding(
