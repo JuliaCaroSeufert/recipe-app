@@ -4,6 +4,7 @@
 // load instantly and offline with no runtime image calls.
 const Map<String, String> kSeedPhotos = {
   'seed-asia-nudeln-tofu': 'assets/recipe_photos/seed-asia-nudeln-tofu.jpg',
+  'seed-bowl-falafel': 'assets/recipe_photos/seed-bowl-falafel.jpg',
   'seed-chili-sin-carne': 'assets/recipe_photos/seed-chili-sin-carne.jpg',
   'seed-couscous-salat': 'assets/recipe_photos/seed-couscous-salat.jpg',
   'seed-gefuellte-suesskartoffel': 'assets/recipe_photos/seed-gefuellte-suesskartoffel.jpg',
@@ -24,4 +25,5 @@ const Map<String, String> kSeedPhotos = {
   'seed-rindergeschnetzeltes': 'assets/recipe_photos/seed-rindergeschnetzeltes.jpg',
   'seed-rote-bete-salat': 'assets/recipe_photos/seed-rote-bete-salat.jpg',
   'seed-shakshuka': 'assets/recipe_photos/seed-shakshuka.jpg',
+  'seed-spaghetti-bolognese-linsen': 'assets/recipe_photos/seed-spaghetti-bolognese-linsen.jpg',
 };
