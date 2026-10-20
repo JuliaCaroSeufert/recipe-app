@@ -1,0 +1,49 @@
+name: KI-Fotos holen
+
+# Generiert einmalig gestylte KI-Food-Fotos (Pollinations Flux) fuer alle
+# Seed-Rezepte, laedt sie als gebuendelte Assets herunter (gestaffelt, wegen
+# des Gratis-Limits 1 Bild/45s) und committet sie. Danach laden die Fotos
+# ueberall sofort und offline. Auslösen: Commit mit [ai-photos] im Text.
+on:
+  push:
+    branches: ['claude/gallant-bohr-s6ur6z']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  photos:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[ai-photos]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+        with:
+          ref: claude/gallant-bohr-s6ur6z
+
+      - name: Flutter einrichten
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.7
+          channel: stable
+          cache: true
+
+      - name: Pakete holen
+        run: flutter pub get
+
+      - name: Fotos generieren (gestaffelt)
+        run: dart run tool/download_ai_photos.dart
+
+      - name: Ergebnis committen
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "Keine Aenderung"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/recipe_photos lib/data/seed_photos.dart
+          git commit -m "Download AI recipe photos (auto)"
+          git push origin HEAD:claude/gallant-bohr-s6ur6z

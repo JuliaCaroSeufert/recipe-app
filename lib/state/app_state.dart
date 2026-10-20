@@ -106,15 +106,17 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Applies the baked-in seed photos ([kSeedPhotos]) to already-stored seed
-  /// recipes, overriding an outdated URL so existing installs pick up the
-  /// current photo source on the next launch (no network).
+  /// Forces every seed recipe's photo to the baked-in value ([kSeedPhotos],
+  /// a bundled asset path), overriding any outdated URL so existing installs
+  /// pick up the current photos and stale ones are cleared. Imported recipes
+  /// keep their own photo.
   Future<void> _applyBakedSeedPhotos() async {
     for (var i = 0; i < _recipes.length; i++) {
       final r = _recipes[i];
-      final baked = kSeedPhotos[r.id];
-      if (baked != null && baked.isNotEmpty && r.imageUrl != baked) {
-        _recipes[i] = r.copyWith(imageUrl: baked);
+      if (r.source != RecipeSource.seed) continue;
+      final want = kSeedPhotos[r.id] ?? '';
+      if (r.imageUrl != want) {
+        _recipes[i] = r.copyWith(imageUrl: want);
         await _repo.saveRecipe(_recipes[i]);
       }
     }

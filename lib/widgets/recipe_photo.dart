@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../logic/ai_photo.dart';
 import '../models/recipe.dart';
 import '../theme.dart';
 import 'net_image.dart';
@@ -27,14 +26,42 @@ class RecipePhoto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Baked/imported photo if present, otherwise a deterministic AI photo.
-    final url = recipe.imageUrl.isNotEmpty ? recipe.imageUrl : aiPhotoUrl(recipe);
-    return netImage(
-      url,
-      width: width,
-      height: height,
-      radius: radius,
-      placeholder: _placeholder(context),
+    final url = recipe.imageUrl;
+    // Bundled AI photo asset (the common case for seed recipes).
+    if (url.startsWith('assets/')) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
+        child: SizedBox(
+          width: width,
+          height: height,
+          child: Image.asset(
+            url,
+            width: width,
+            height: height,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => _placeholder(context),
+          ),
+        ),
+      );
+    }
+    // Imported recipes may carry a real network photo.
+    if (url.isNotEmpty) {
+      return netImage(
+        url,
+        width: width,
+        height: height,
+        radius: radius,
+        placeholder: _placeholder(context),
+      );
+    }
+    // No photo yet → the tasteful gradient + emoji tile.
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: _placeholder(context),
+      ),
     );
   }
 
