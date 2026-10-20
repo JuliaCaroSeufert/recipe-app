@@ -2,4 +2,23 @@
 // Maps a seed recipe id to a bundled AI food photo asset (downloaded once in
 // CI, respecting the image service's rate limit, then committed) so the photos
 // load instantly and offline with no runtime image calls.
-const Map<String, String> kSeedPhotos = {};
+const Map<String, String> kSeedPhotos = {
+  'seed-asia-nudeln-tofu': 'assets/recipe_photos/seed-asia-nudeln-tofu.jpg',
+  'seed-chili-sin-carne': 'assets/recipe_photos/seed-chili-sin-carne.jpg',
+  'seed-couscous-salat': 'assets/recipe_photos/seed-couscous-salat.jpg',
+  'seed-gemuesepfanne-halloumi': 'assets/recipe_photos/seed-gemuesepfanne-halloumi.jpg',
+  'seed-gnocchi-mangold': 'assets/recipe_photos/seed-gnocchi-mangold.jpg',
+  'seed-haehnchen-bowl': 'assets/recipe_photos/seed-haehnchen-bowl.jpg',
+  'seed-haehnchen-ofen-gemuese': 'assets/recipe_photos/seed-haehnchen-ofen-gemuese.jpg',
+  'seed-kichererbsen-curry': 'assets/recipe_photos/seed-kichererbsen-curry.jpg',
+  'seed-kuerbissuppe': 'assets/recipe_photos/seed-kuerbissuppe.jpg',
+  'seed-lachs-suesskartoffel': 'assets/recipe_photos/seed-lachs-suesskartoffel.jpg',
+  'seed-linsen-dal': 'assets/recipe_photos/seed-linsen-dal.jpg',
+  'seed-minestrone': 'assets/recipe_photos/seed-minestrone.jpg',
+  'seed-ofengemuese-feta': 'assets/recipe_photos/seed-ofengemuese-feta.jpg',
+  'seed-omelett-gemuese': 'assets/recipe_photos/seed-omelett-gemuese.jpg',
+  'seed-pasta-spinat-ricotta': 'assets/recipe_photos/seed-pasta-spinat-ricotta.jpg',
+  'seed-pute-wok-gruene-bohnen': 'assets/recipe_photos/seed-pute-wok-gruene-bohnen.jpg',
+  'seed-rindergeschnetzeltes': 'assets/recipe_photos/seed-rindergeschnetzeltes.jpg',
+  'seed-shakshuka': 'assets/recipe_photos/seed-shakshuka.jpg',
+};
