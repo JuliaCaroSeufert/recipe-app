@@ -100,6 +100,7 @@ WeekPlan generateWeekPlan(
   List<Recipe> library,
   Household household, {
   Map<String, DateTime> history = const {},
+  Set<String> avoid = const {},
 }) {
   final rng = Random(config.seed ?? DateTime.now().millisecondsSinceEpoch);
   final persons = household.persons;
@@ -166,11 +167,33 @@ WeekPlan generateWeekPlan(
     return 2.5 + 4.0 * (weeks / kFavoriteIntervalWeeks);
   }
 
+  // Recency penalty so new / regenerated weeks suggest different dishes:
+  // recipes just planned, or in the week being replaced ([avoid]), are pushed
+  // down. The overdue-favourite bonus (above) outweighs this on purpose.
+  double recencyPenalty(Recipe r) {
+    var pen = 0.0;
+    if (avoid.contains(r.id)) pen -= 9.0; // the week we're regenerating
+    final last = history[r.id];
+    if (last != null) {
+      final weeks = base.difference(last).inDays / 7.0;
+      if (weeks < 1) {
+        pen -= 7.0;
+      } else if (weeks < 2) {
+        pen -= 4.0;
+      } else if (weeks < 3) {
+        pen -= 1.5;
+      }
+    }
+    return pen;
+  }
+
+  double rank(Recipe r) => favBonus(r) + recencyPenalty(r);
+
   // --- 1) Batch-cook sessions -------------------------------------------
   final batchPool = candidates.where((r) => r.batchFriendly).toList()
     ..shuffle(rng)
-    // Overdue favourites first, then favourites, then the rest.
-    ..sort((a, b) => favBonus(b).compareTo(favBonus(a)));
+    // Overdue favourites first, then fresh dishes, then recently used ones.
+    ..sort((a, b) => rank(b).compareTo(rank(a)));
   var sessionsMade = 0;
   for (final recipe in batchPool) {
     if (sessionsMade >= config.batchSessions) break;
@@ -234,7 +257,8 @@ WeekPlan generateWeekPlan(
         persons: persons,
         alreadyUsed: used.contains(r.id),
         favoriteBonus: favBonus(r),
-        jitter: rng.nextDouble() * 0.5,
+        recencyPenalty: recencyPenalty(r),
+        jitter: rng.nextDouble() * 0.8,
       );
       if (score > bestScore) {
         bestScore = score;
@@ -266,6 +290,7 @@ double _score(
   required int persons,
   required bool alreadyUsed,
   required double favoriteBonus,
+  required double recencyPenalty,
   required double jitter,
 }) {
   // Variety: strongly reward produce we don't have yet.
@@ -288,7 +313,12 @@ double _score(
   nutritionScore = nutritionScore / _focusNutrients.length * 6.0;
 
   final repeatPenalty = alreadyUsed ? -100.0 : 0.0;
-  return varietyScore + nutritionScore + favoriteBonus + repeatPenalty + jitter;
+  return varietyScore +
+      nutritionScore +
+      favoriteBonus +
+      recencyPenalty +
+      repeatPenalty +
+      jitter;
 }
 
 WeekPlan _assemble(

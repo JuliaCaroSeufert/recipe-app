@@ -180,12 +180,35 @@ class AppState extends ChangeNotifier {
   Future<WeekPlan> generatePlan(GenerateConfig config) async {
     final base = DateTime(
         config.startDate.year, config.startDate.month, config.startDate.day);
+    bool sameWeek(WeekPlan p) =>
+        p.startDate.year == base.year &&
+        p.startDate.month == base.month &&
+        p.startDate.day == base.day;
+
+    // Recipes already planned for this week (the version we're regenerating) —
+    // avoid them so a re-generate really gives different suggestions.
+    final avoid = <String>{};
+    for (final p in _plans.where(sameWeek)) {
+      for (final day in p.days) {
+        for (final slot in day.meals.values) {
+          if (slot.recipeId != null) avoid.add(slot.recipeId!);
+        }
+      }
+    }
+
     final plan = generateWeekPlan(
       config,
       _recipes,
       _household,
       history: _planHistory(excludeStart: base),
+      avoid: avoid,
     );
+
+    // Replace any existing plan(s) for the same week instead of stacking them.
+    for (final id in _plans.where(sameWeek).map((p) => p.id).toList()) {
+      _plans.removeWhere((p) => p.id == id);
+      await _repo.deletePlan(id);
+    }
     await _upsertPlan(plan, makeCurrent: true);
     return plan;
   }

@@ -265,6 +265,28 @@ void main() {
       // Sanity: generation still fills the week.
       expect(plannedIds(plan).isNotEmpty, isTrue);
     });
+
+    test('regenerating a week avoids repeating the previous dishes', () {
+      final planA = generateWeekPlan(
+        GenerateConfig(startDate: monday, seed: 5),
+        seedRecipes,
+        const Household(persons: 2),
+      );
+      final aIds = plannedIds(planA);
+      final planB = generateWeekPlan(
+        GenerateConfig(startDate: monday, seed: 9),
+        seedRecipes,
+        const Household(persons: 2),
+        avoid: aIds,
+        history: {
+          for (final id in aIds) id: monday.subtract(const Duration(days: 3)),
+        },
+      );
+      final overlap = aIds.intersection(plannedIds(planB)).length;
+      // Genuinely different, and mostly different despite a small library.
+      expect(overlap < aIds.length, isTrue);
+      expect(overlap <= (aIds.length / 2).ceil(), isTrue);
+    });
   });
 
   group('spoonacular helpers', () {
