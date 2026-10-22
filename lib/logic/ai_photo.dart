@@ -1,3 +1,4 @@
+import '../data/more_recipes.dart' show kMorePhotoQueries;
 import '../models/recipe.dart';
 import 'spoonacular.dart' show queryForRecipe;
 
@@ -9,7 +10,7 @@ import 'spoonacular.dart' show queryForRecipe;
 /// image is generated on first load and cached by URL, and it renders both in
 /// the browser (via the `<img>` web path) and natively.
 String aiPhotoUrl(Recipe r) {
-  final subject = queryForRecipe(r);
+  final subject = kMorePhotoQueries[r.id] ?? queryForRecipe(r);
   var seed = 0;
   for (final c in r.id.codeUnits) {
     seed = (seed * 31 + c) & 0x7fffffff;

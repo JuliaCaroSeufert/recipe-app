@@ -16,7 +16,7 @@ jobs:
   photos:
     if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[ai-photos]') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 330
     steps:
       - name: Code auschecken
         uses: actions/checkout@v4
